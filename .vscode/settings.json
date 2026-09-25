@@ -67,6 +67,9 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
+<<<<<<< HEAD
     "dotnet.defaultSolution": "Victory.exe_Techwiz7.slnx",
+=======
+>>>>>>> origin/main
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
