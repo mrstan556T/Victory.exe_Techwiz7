@@ -67,6 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Cyberpunk_Detective.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
