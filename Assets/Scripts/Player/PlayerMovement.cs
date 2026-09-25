@@ -4,53 +4,66 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("Tốc độ di chuyển")]
     public float walkSpeed = 3.0f;
     public float runSpeed = 7.0f;
+    public float turnSmoothTime = 0.1f;
+    private float turnSmoothVelocity;
+
+    [Header("Nhảy & Trọng lực")]
     public float jumpHeight = 1.5f;
-    public float gravity = -9.81f;
+    public float gravity = -20f;
+    public float groundCheckDistance = 0.2f;
 
     private CharacterController controller;
     private Animator animator;
     private Transform cameraTransform;
-    private Vector3 verticalVelocity;
-    private float jumpCooldown = 0f; // Bộ đếm ngăn isGrounded kích hoạt quá sớm
+    private SimpleCameraFollow camScript;
+    private float verticalVelocityY;
+    private float jumpCooldown = 0f;
+
+    // Biến lưu pháp tuyến bề mặt va chạm để trượt
+    private Vector3 contactNormal = Vector3.up;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
-        // Lấy Transform của Camera chính
         if (Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
+            camScript = cameraTransform.GetComponent<SimpleCameraFollow>();
+        }
+        else
+        {
+            Camera cam = FindAnyObjectByType<Camera>();
+            if (cam != null)
+            {
+                cameraTransform = cam.transform;
+                camScript = cameraTransform.GetComponent<SimpleCameraFollow>();
+            }
         }
     }
 
     void Update()
     {
-        // 1. Quản lý thời gian chờ sau khi nhảy
-        if (jumpCooldown > 0f)
+        if (jumpCooldown > 0f) jumpCooldown -= Time.deltaTime;
+
+        // 1. Kiểm tra tiếp đất kết hợp Raycast ở chân
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y + controller.radius, transform.position.z);
+        bool physicallyGrounded = Physics.CheckSphere(spherePosition, controller.radius + groundCheckDistance, ~0, QueryTriggerInteraction.Ignore);
+        
+        bool isGrounded = (controller.isGrounded || physicallyGrounded) && jumpCooldown <= 0f;
+
+        if (animator != null) animator.SetBool("IsGrounded", isGrounded);
+
+        if (isGrounded && verticalVelocityY < 0)
         {
-            jumpCooldown -= Time.deltaTime;
+            verticalVelocityY = -5f; // Tì lực chắc chắn xuống sàn
         }
 
-        // Chỉ xác nhận tiếp đất khi không trong giai đoạn vừa bấm bật nhảy
-        bool isGrounded = controller.isGrounded && jumpCooldown <= 0f;
-
-        if (animator != null)
-        {
-            animator.SetBool("IsGrounded", isGrounded);
-        }
-
-        // Giữ lực tì nhẹ xuống sàn khi đã tiếp đất
-        if (isGrounded && verticalVelocity.y < 0)
-        {
-            verticalVelocity.y = -2f;
-        }
-
-        // 2. Đọc phím bấm (New Input System)
+        // 2. Nhận tín hiệu phím
         float horizontal = 0f;
         float vertical = 0f;
         bool isRunning = false;
@@ -67,11 +80,11 @@ public class PlayerMovement : MonoBehaviour
             jumpPressed = Keyboard.current.spaceKey.wasPressedThisFrame;
         }
 
-        // 3. Xử lý nhảy
-        if (jumpPressed && controller.isGrounded)
+        // 3. Logic Nhảy
+        if (jumpPressed && isGrounded)
         {
-            verticalVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            jumpCooldown = 0.2f; // Tạm ngắt isGrounded trong 0.2s để trigger Jump kịp kích hoạt
+            verticalVelocityY = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            jumpCooldown = 0.25f;
 
             if (animator != null)
             {
@@ -80,49 +93,76 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 4. Di chuyển ngang bám theo góc nhìn Camera
-        Vector3 inputDir = new Vector3(horizontal, 0f, vertical).normalized;
+        // 4. Tính toán hướng di chuyển
+        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        Vector3 horizontalMove = Vector3.zero;
 
-        if (inputDir.magnitude >= 0.1f)
+        if (direction.magnitude >= 0.1f)
         {
-            Vector3 moveDirection;
+            float camY = 0f;
+            if (cameraTransform != null) camY = cameraTransform.eulerAngles.y;
 
-            if (cameraTransform != null)
+            bool isFirstPerson = camScript != null && camScript.isFirstPerson;
+
+            if (isFirstPerson && cameraTransform != null)
             {
-                // Lấy hướng trước/phải của camera trên mặt phẳng ngang (bỏ qua độ nghiêng Y)
-                Vector3 camForward = cameraTransform.forward;
-                Vector3 camRight = cameraTransform.right;
-                camForward.y = 0f;
-                camRight.y = 0f;
-                camForward.Normalize();
-                camRight.Normalize();
-
-                moveDirection = (camForward * inputDir.z + camRight * inputDir.x).normalized;
+                Vector3 forward = cameraTransform.forward;
+                Vector3 right = cameraTransform.right;
+                forward.y = 0f;
+                right.y = 0f;
+                horizontalMove = (forward.normalized * vertical + right.normalized * horizontal).normalized;
             }
             else
             {
-                moveDirection = inputDir;
+                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camY;
+                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+                horizontalMove = (Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward).normalized;
             }
 
-            // Xoay nhân vật theo hướng di chuyển
-            transform.forward = moveDirection;
+            // TRƯỢT TƯỜNG: Chiếu vector di chuyển lên mặt phẳng va chạm
+            // Giúp triệt tiêu lực đâm thẳng xuyên vào vật thể và ép trượt men theo cạnh
+            if (contactNormal != Vector3.up && Vector3.Dot(horizontalMove, contactNormal) < 0)
+            {
+                horizontalMove = Vector3.ProjectOnPlane(horizontalMove, contactNormal).normalized;
+            }
 
             float currentSpeed = isRunning ? runSpeed : walkSpeed;
-            float animSpeedValue = isRunning ? 2.0f : 1.0f;
+            horizontalMove *= currentSpeed;
 
-            controller.Move(moveDirection * currentSpeed * Time.deltaTime);
-
-            if (animator != null)
-                animator.SetFloat("Speed", animSpeedValue);
+            if (animator != null) animator.SetFloat("Speed", isRunning ? 2.0f : 1.0f);
         }
         else
         {
-            if (animator != null)
-                animator.SetFloat("Speed", 0f);
+            if (animator != null) animator.SetFloat("Speed", 0f);
         }
 
-        // 5. Áp dụng trọng lực rơi tự do
-        verticalVelocity.y += gravity * Time.deltaTime;
-        controller.Move(verticalVelocity * Time.deltaTime);
+        // 5. Trọng lực
+        verticalVelocityY += gravity * Time.deltaTime;
+
+        // 6. Gộp chuyển động và đảm bảo trục Y không bị lực ngang can thiệp
+        Vector3 finalVelocity = new Vector3(horizontalMove.x, verticalVelocityY, horizontalMove.z);
+
+        controller.Move(finalVelocity * Time.deltaTime);
+
+        // Reset pháp tuyến sau mỗi frame
+        contactNormal = Vector3.up;
+    }
+
+    // Bắt va chạm với bất kỳ bề mặt nào mà nhân vật tiếp xúc
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        contactNormal = hit.normal;
+
+        // Nếu va chạm với vật cản đứng (tường, mép đồ vật)
+        if (hit.normal.y < 0.5f)
+        {
+            // Ngăn chặn hoàn toàn việc nâng độ cao Y ngoài ý muốn khi ép sát vật thể
+            if (verticalVelocityY > 0 && !controller.isGrounded && jumpCooldown <= 0f)
+            {
+                verticalVelocityY = 0f;
+            }
+        }
     }
 }
