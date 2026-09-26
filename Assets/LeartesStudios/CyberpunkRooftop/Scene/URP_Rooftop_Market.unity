@@ -164197,7 +164197,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a934931de1391a47bf8c8118ebf5d57, type: 3}
   m_Name: 
-<<<<<<< HEAD
   m_EditorClassIdentifier: Assembly-CSharp::SimpleCameraFollow
   target: {fileID: 1604929282}
   characterRenderer: {fileID: 0}
@@ -164289,7 +164288,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5ff83531a6c404f8f7bf1514294878, type: 3}
   m_PrefabInstance: {fileID: 1480511431}
   m_PrefabAsset: {fileID: 0}
-=======
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   target: {fileID: 1401635979318099233}
   distance: 2.8
@@ -164297,7 +164295,6 @@ Transform:
   mouseSensitivity: 2
   minVerticalAngle: -45
   maxVerticalAngle: 45
->>>>>>> 22409857bd18d4ccbbd39c2669ab6874308dd56f
 --- !u!114 &1483097267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165628,7 +165625,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abc00000000010590139405579010433, type: 3}
-<<<<<<< HEAD
 --- !u!1001 &1604929280
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -165750,8 +165746,6 @@ MonoBehaviour:
   jumpHeight: 1.5
   gravity: -20
   groundCheckDistance: 0.2
-=======
->>>>>>> 22409857bd18d4ccbbd39c2669ab6874308dd56f
 --- !u!1 &1614228243
 GameObject:
   m_ObjectHideFlags: 0
@@ -171705,7 +171699,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1031002340, guid: abc00000000004806513264288646865, type: 3}
   m_PrefabInstance: {fileID: 2116221131}
   m_PrefabAsset: {fileID: 0}
-<<<<<<< HEAD
 --- !u!1001 &485643229687717573
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -171772,7 +171765,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3081145594511413210, guid: 230a9929d3bb99546abb9223f423f524, type: 3}
   m_PrefabInstance: {fileID: 485643229687717573}
   m_PrefabAsset: {fileID: 0}
-=======
 --- !u!1 &51733276646073270
 GameObject:
   m_ObjectHideFlags: 0
@@ -172252,7 +172244,6 @@ Transform:
   - {fileID: 6273256547863477461}
   m_Father: {fileID: 1456299770938547380}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>> 22409857bd18d4ccbbd39c2669ab6874308dd56f
 --- !u!1001 &1577424466131101268
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -174475,9 +174466,6 @@ SceneRoots:
   - {fileID: 1301977922}
   - {fileID: 110089445}
   - {fileID: 1478925029}
-<<<<<<< HEAD
   - {fileID: 1819683029}
   - {fileID: 1604929280}
-=======
   - {fileID: 2664277974438024620}
->>>>>>> 22409857bd18d4ccbbd39c2669ab6874308dd56f
