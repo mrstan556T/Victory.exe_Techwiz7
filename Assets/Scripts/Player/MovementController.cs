@@ -33,6 +33,12 @@ public class MovementController : MonoBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
+        if (DialogueManager.Instance != null &&
+        DialogueManager.Instance.IsDialogueActive)
+        {
+            return;
+        }
+
         HandleRotation();
         GroundCheck();
         HandleJump();
