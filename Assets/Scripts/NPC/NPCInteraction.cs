@@ -1,32 +1,35 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class NPCInteraction : MonoBehaviour
 {
-    [Header("Interaction")]
-    [SerializeField] private GameObject interactionPrompt;
-    [SerializeField] private Button talkButton;
+    [Header("NPC")]
+    [SerializeField] private string npcId;
 
-    [Header("Dialogue")]
-    [SerializeField] private DialogueData dialogueData;
+    [Header("Interaction Prompt")]
+    [SerializeField] private GameObject interactionPrompt;
+    [SerializeField] private TMP_Text promptText;
 
     private bool playerInRange;
 
-    private void Awake()
+    private void Start()
     {
-        interactionPrompt.SetActive(false);
-
-        if (talkButton != null) talkButton.onClick.AddListener(StartConversation);
+        if (interactionPrompt != null)
+        {
+            interactionPrompt.SetActive(false);
+        }
     }
 
     private void Update()
     {
-        if(playerInRange)
+        if (!playerInRange)
+            return;
+
+        UpdatePrompt();
+
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            if(Input.GetKeyDown(KeyCode.E))
-            {
-                StartConversation();
-            }
+            StartConversation();
         }
     }
 
@@ -37,8 +40,9 @@ public class NPCInteraction : MonoBehaviour
 
         playerInRange = true;
 
-        // Không hiện Talk nếu đang dialogue
-        if (!DialogueManager.Instance.IsDialogueActive)
+        UpdatePrompt();
+
+        if (interactionPrompt != null)
         {
             interactionPrompt.SetActive(true);
         }
@@ -51,19 +55,58 @@ public class NPCInteraction : MonoBehaviour
 
         playerInRange = false;
 
-        interactionPrompt.SetActive(false);
+        if (interactionPrompt != null)
+        {
+            interactionPrompt.SetActive(false);
+        }
+    }
+
+    private void UpdatePrompt()
+    {
+        if (StoryManager.Instance == null)
+            return;
+
+        ConversationData conversation =
+            StoryManager.Instance.GetAvailableConversation(npcId);
+
+        if (conversation == null)
+        {
+            if (interactionPrompt != null)
+            {
+                interactionPrompt.SetActive(false);
+            }
+
+            return;
+        }
+
+        if (promptText != null)
+        {
+            promptText.text =
+                $"[E] {conversation.prompt.text}";
+        }
     }
 
     private void StartConversation()
     {
-        if (!playerInRange)
+        if (StoryManager.Instance == null)
             return;
 
-        if (DialogueManager.Instance.IsDialogueActive)
+        ConversationData conversation =
+            StoryManager.Instance.GetAvailableConversation(npcId);
+
+        if (conversation == null)
             return;
 
-        interactionPrompt.SetActive(false);
+        if (DialogueManager.Instance == null)
+            return;
 
-        DialogueManager.Instance.StartDialogue(dialogueData);
+        DialogueManager.Instance.StartDialogue(
+            conversation
+        );
+
+        if (interactionPrompt != null)
+        {
+            interactionPrompt.SetActive(false);
+        }
     }
 }

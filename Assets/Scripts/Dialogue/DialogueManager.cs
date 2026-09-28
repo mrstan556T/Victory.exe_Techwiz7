@@ -6,9 +6,8 @@ public class DialogueManager : MonoBehaviour
 
     [SerializeField] private DialogueUI dialogueUI;
 
-    private DialogueLine[] currentDialogue;
+    private ConversationData currentConversation;
     private int currentLineIndex;
-
     private bool isDialogueActive;
 
     public bool IsDialogueActive => isDialogueActive;
@@ -24,21 +23,22 @@ public class DialogueManager : MonoBehaviour
         Instance = this;
     }
 
-    public void StartDialogue(DialogueData dialogueData)
+    public void StartDialogue(ConversationData conversation)
     {
-        if (dialogueData == null)
+        if (conversation == null)
             return;
 
-        if (dialogueData.dialogueLines == null ||
-            dialogueData.dialogueLines.Length == 0)
+        if (conversation.lines == null ||
+            conversation.lines.Length == 0)
             return;
 
-        currentDialogue = dialogueData.dialogueLines;
+        currentConversation = conversation;
         currentLineIndex = 0;
-
         isDialogueActive = true;
 
-        dialogueUI.ShowDialogue(currentDialogue[currentLineIndex]);
+        dialogueUI.ShowDialogue(
+            conversation.lines[currentLineIndex]
+        );
     }
 
     public void NextLine()
@@ -48,20 +48,29 @@ public class DialogueManager : MonoBehaviour
 
         currentLineIndex++;
 
-        if (currentLineIndex >= currentDialogue.Length)
+        if (currentLineIndex >= currentConversation.lines.Length)
         {
             EndDialogue();
             return;
         }
 
-        dialogueUI.ShowDialogue(currentDialogue[currentLineIndex]);
+        dialogueUI.ShowDialogue(
+            currentConversation.lines[currentLineIndex]
+        );
     }
 
     public void EndDialogue()
     {
         isDialogueActive = false;
 
-        currentDialogue = null;
+        if (currentConversation != null)
+        {
+            StoryManager.Instance.CompleteConversation(
+                currentConversation.id
+            );
+        }
+
+        currentConversation = null;
         currentLineIndex = 0;
 
         dialogueUI.HideDialogue();

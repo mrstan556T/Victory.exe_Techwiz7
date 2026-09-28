@@ -33,7 +33,7 @@ public class DialogueUI : MonoBehaviour
         if (!dialoguePanel.activeSelf)
             return;
 
-        // Enter ?? Next
+        // Enter → Next
         if (Input.GetKeyDown(KeyCode.Return) ||
             Input.GetKeyDown(KeyCode.KeypadEnter))
         {
@@ -45,9 +45,9 @@ public class DialogueUI : MonoBehaviour
     {
         dialoguePanel.SetActive(true);
 
-        speakerNameText.text = line.speakerName;
+        speakerNameText.text = line.speaker;
 
-        StartTyping(line.dialogueText);
+        StartTyping(line.text);
     }
 
     private void StartTyping(string text)
@@ -81,15 +81,18 @@ public class DialogueUI : MonoBehaviour
 
     private void OnNextButtonClicked()
     {
-        // N?u text v?n ?ang ch?y ? hi?n full text tr??c
+        // Nếu text vẫn đang chạy → hiện full text trước
         if (isTyping)
         {
             CompleteTyping();
             return;
         }
 
-        // Text ?� hi?n ??y ?? ? sang line ti?p theo
-        DialogueManager.Instance.NextLine();
+        // Text đã hiển thị đầy đủ → sang line tiếp theo
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.NextLine();
+        }
     }
 
     private void CompleteTyping()
