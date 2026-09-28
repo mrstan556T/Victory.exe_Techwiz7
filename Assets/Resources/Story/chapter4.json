@@ -1,0 +1,77 @@
+{
+  "chapterId": 4,
+  "chapterTitle": "THE CLOTHING STALL",
+  "completionConversationId": "NORA_CH4_01",
+
+  "npcs": [
+    {
+      "npcId": "NORA_VALE",
+      "displayName": "Nora Vale"
+    }
+  ],
+
+  "events": [],
+
+  "conversations": [
+    {
+      "id": "NORA_CH4_01",
+      "npcId": "NORA_VALE",
+
+      "prompt": {
+        "speaker": "Kael",
+        "text": "Good evening, Ms. Nora."
+      },
+
+      "lines": [
+        {
+          "speaker": "Nora",
+          "text": "Good evening. You are..."
+        },
+        {
+          "speaker": "Kael",
+          "text": "I'm an investigator from the Cyber Crime Investigation Bureau. I need to ask you a few questions regarding the investigation."
+        },
+        {
+          "speaker": "Nora",
+          "text": "Of course. Go ahead."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Have you noticed anything unusual about Mr. Evan recently?"
+        },
+        {
+          "speaker": "Nora",
+          "text": "No. He seemed cheerful as usual."
+        },
+        {
+          "speaker": "Kael",
+          "text": "What about around 7:30 PM? Did you notice anything unusual at that time?"
+        },
+        {
+          "speaker": "Nora",
+          "text": "Yes. I saw someone coming from the alley behind Mr. Evan's house and entering his home."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Did you recognize who it was?"
+        },
+        {
+          "speaker": "Nora",
+          "text": "It was raining heavily, so I couldn't see him clearly. Later, I saw him leave and run toward the central courtyard. He was carrying something that looked like a gun."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Thank you, Ms. Nora. Goodbye."
+        },
+        {
+          "speaker": "Nora",
+          "text": "Goodbye, Detective."
+        }
+      ],
+
+      "condition": {
+        "requiredConversationId": "ROOK_CH3_01"
+      }
+    }
+  ]
+}

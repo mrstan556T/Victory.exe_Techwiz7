@@ -1,0 +1,85 @@
+{
+  "chapterId": 6,
+  "chapterTitle": "THE DELIVERY MAN",
+  "completionConversationId": "JACE_CH6_01",
+
+  "npcs": [
+    {
+      "npcId": "JACE_RENN",
+      "displayName": "Jace Renn"
+    }
+  ],
+
+  "events": [],
+
+  "conversations": [
+    {
+      "id": "JACE_CH6_01",
+      "npcId": "JACE_RENN",
+
+      "prompt": {
+        "speaker": "Kael",
+        "text": "Hello."
+      },
+
+      "lines": [
+        {
+          "speaker": "Jace",
+          "text": "Hello. What can I do for you?"
+        },
+        {
+          "speaker": "Kael",
+          "text": "I need to ask you a few questions about Mr. Evan."
+        },
+        {
+          "speaker": "Jace",
+          "text": "I'm very sorry about Jace's death. Someone as good as him shouldn't have met such an end."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Has Mr. Evan had any conflicts with anyone recently?"
+        },
+        {
+          "speaker": "Jace",
+          "text": "No. He was a good man. It would be difficult for him to have a conflict with anyone."
+        },
+        {
+          "speaker": "Kael",
+          "text": "I see. Where were you around 7:30 PM, when the murder occurred?"
+        },
+        {
+          "speaker": "Jace",
+          "text": "I was delivering my last package at the shopping district."
+        },
+        {
+          "speaker": "Jace",
+          "text": "The rain was extremely heavy, so I decided to head back early."
+        },
+        {
+          "speaker": "Kael",
+          "text": "I see. Did you often meet Mr. Evan?"
+        },
+        {
+          "speaker": "Jace",
+          "text": "Mr. Evan was one of my customers. I've delivered packages to him many times."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Then you must be quite familiar with his schedule."
+        },
+        {
+          "speaker": "Jace",
+          "text": "I didn't really pay much attention to his habits."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Thank you for your time."
+        }
+      ],
+
+      "condition": {
+        "requiredConversationId": "NORA_CH4_01"
+      }
+    }
+  ]
+}
