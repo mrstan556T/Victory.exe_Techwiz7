@@ -11607,7 +11607,7 @@ MonoBehaviour:
   - {r: 0.95, g: 0.95, b: 0.95, a: 1}
   targetLight: {fileID: 1334487466}
   lightIntensityOn: 4
-  lightTurnOnColor: {r: 0, g: 1, b: 1, a: 1}
+  lightTurnOnColor: {r: 1, g: 0.9019608, b: 0, a: 1}
 --- !u!1 &832050225
 GameObject:
   m_ObjectHideFlags: 0
@@ -173340,7 +173340,7 @@ Transform:
   m_GameObject: {fileID: 1334487463}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.855, y: 399.57, z: 384.451}
+  m_LocalPosition: {x: -3.085, y: 399.638, z: 385.255}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
