@@ -35,6 +35,17 @@ public class PatrolMovement : MonoBehaviour
 
     private void Update()
     {
+        if (agent == null)
+        {
+            agent = GetComponent<NavMeshAgent>();
+        }
+
+        if (agent == null || !agent.isOnNavMesh)
+        {
+            Debug.LogError("PatrolMovement: Agent is not on NavMesh.");
+            return;
+        }
+
         if (followTarget != null)
         {
             FollowTarget();
@@ -63,14 +74,46 @@ public class PatrolMovement : MonoBehaviour
 
     private void MoveToWaypoint()
     {
+        if (waypoints == null || waypoints.Length == 0)
+        {
+            return;
+        }
+
         Transform target = waypoints[currentWaypointIndex];
+        if (target == null)
+        {
+            MoveToNextWaypoint();
+            return;
+        }
 
         agent.isStopped = false;
         agent.speed = isReturningToPatrol ? returnSpeed : moveSpeed;
-        agent.SetDestination(target.position);
 
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        if (!agent.hasPath || Vector3.Distance(agent.destination, target.position) > 0.1f)
         {
+            agent.SetDestination(target.position);
+        }
+
+        if (animator != null && agent.velocity.sqrMagnitude > 0.01f)
+        {
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+            {
+                animator.Play("Walking");
+            }
+        }
+
+        float arrivalThreshold = Mathf.Max(agent.stoppingDistance + 0.3f, 0.5f);
+        Vector3 diff = transform.position - target.position;
+        diff.y = 0f;
+        float horizontalDist = diff.magnitude;
+
+        if (!agent.pathPending && (agent.remainingDistance <= arrivalThreshold || horizontalDist <= arrivalThreshold))
+        {
+            Debug.Log("Patrol reached waypoint: " + target.name);
+            Debug.Log("Is stop waypoint: " + IsStopWaypoint(target));
+
+            agent.isStopped = true;
+            agent.ResetPath();
             isReturningToPatrol = false;
 
             if (IsStopWaypoint(target))
@@ -93,12 +136,22 @@ public class PatrolMovement : MonoBehaviour
 
         agent.isStopped = false;
         agent.speed = moveSpeed;
-        agent.SetDestination(overrideTargetPosition);
 
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        if (!agent.hasPath || Vector3.Distance(agent.destination, overrideTargetPosition) > 0.1f)
+        {
+            agent.SetDestination(overrideTargetPosition);
+        }
+
+        float arrivalThreshold = Mathf.Max(agent.stoppingDistance + 0.3f, 0.5f);
+        Vector3 diff = transform.position - overrideTargetPosition;
+        diff.y = 0f;
+        float horizontalDist = diff.magnitude;
+
+        if (!agent.pathPending && (agent.remainingDistance <= arrivalThreshold || horizontalDist <= arrivalThreshold))
         {
             isAtOverrideTarget = true;
             agent.isStopped = true;
+            agent.ResetPath();
 
             if (animator != null)
             {
@@ -118,7 +171,11 @@ public class PatrolMovement : MonoBehaviour
 
         agent.isStopped = false;
         agent.speed = followSpeed;
-        agent.SetDestination(followTarget.position);
+
+        if (!agent.hasPath || Vector3.Distance(agent.destination, followTarget.position) > 0.5f)
+        {
+            agent.SetDestination(followTarget.position);
+        }
 
         if (animator == null)
         {
@@ -136,14 +193,31 @@ public class PatrolMovement : MonoBehaviour
 
     private bool IsStopWaypoint(Transform waypoint)
     {
-        if (stopWaypoints == null)
+        if (stopWaypoints == null || waypoint == null)
         {
             return false;
         }
 
         foreach (Transform stopWaypoint in stopWaypoints)
         {
-            if (waypoint == stopWaypoint)
+            if (stopWaypoint == null)
+            {
+                continue;
+            }
+
+            if (stopWaypoint == waypoint)
+            {
+                return true;
+            }
+
+            if (string.Equals(stopWaypoint.name, waypoint.name, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            Vector3 diff = stopWaypoint.position - waypoint.position;
+            diff.y = 0f;
+            if (diff.sqrMagnitude < 0.25f)
             {
                 return true;
             }
@@ -157,15 +231,19 @@ public class PatrolMovement : MonoBehaviour
         isStopping = true;
         stopTimer = stopDuration;
         agent.isStopped = true;
+        agent.ResetPath();
 
         if (animator != null)
         {
             animator.Play("PatrolAction");
         }
+
+        Debug.Log("Patrol stopped for " + stopDuration + " seconds.");
     }
 
     private void HandleStop()
     {
+        agent.isStopped = true;
         stopTimer -= Time.deltaTime;
 
         if (stopTimer <= 0f)
@@ -189,6 +267,13 @@ public class PatrolMovement : MonoBehaviour
         if (currentWaypointIndex >= waypoints.Length)
         {
             currentWaypointIndex = 0;
+        }
+
+        if (waypoints != null && waypoints.Length > 0 && waypoints[currentWaypointIndex] != null)
+        {
+            agent.isStopped = false;
+            agent.speed = isReturningToPatrol ? returnSpeed : moveSpeed;
+            agent.SetDestination(waypoints[currentWaypointIndex].position);
         }
     }
 
@@ -241,11 +326,17 @@ public class PatrolMovement : MonoBehaviour
         followTarget = null;
         overrideTarget = null;
         isAtOverrideTarget = false;
+        isStopping = false;
         isReturningToPatrol = true;
         currentWaypointIndex = previousWaypointIndex;
 
         agent.isStopped = false;
         agent.speed = returnSpeed;
+
+        if (waypoints != null && waypoints.Length > 0 && waypoints[currentWaypointIndex] != null)
+        {
+            agent.SetDestination(waypoints[currentWaypointIndex].position);
+        }
 
         if (animator != null)
         {
@@ -264,6 +355,7 @@ public class PatrolMovement : MonoBehaviour
         isAtOverrideTarget = false;
 
         agent.isStopped = true;
+        agent.ResetPath();
 
         if (animator != null)
         {

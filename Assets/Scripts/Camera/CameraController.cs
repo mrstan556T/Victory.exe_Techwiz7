@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Transform target;
 
     [Header("Camera Settings")]
-    [SerializeField] private float distance = 2f;
+    [SerializeField] private float distance = 2.8f;
     [SerializeField] private float height = 0.5f;
 
     [Header("Mouse Settings")]

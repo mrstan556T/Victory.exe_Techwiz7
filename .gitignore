@@ -44,10 +44,8 @@
 
 # Visual Studio cache directory
 .vs/
-.vscode/settings.json
-*.vscode/
 .vscode/
-*.vs/
+Packages/packages-lock.json
 # Gradle cache directory
 .gradle/
 

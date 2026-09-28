@@ -62,49 +62,55 @@ public class PatrolResponse : MonoBehaviour
     }
 
     private void Update()
+{
+    if (restrictedArea == null)
     {
-        if (restrictedArea == null)
-        {
-            Debug.LogWarning("PatrolResponse: RestrictedArea is missing.");
-            return;
-        }
+        Debug.LogWarning(
+            "PatrolResponse: RestrictedArea is missing."
+        );
 
-        if (patrolDetection == null)
-        {
-            Debug.LogWarning("PatrolResponse: PatrolDetection is missing.");
-            return;
-        }
-
-        if (patrolMovement == null)
-        {
-            Debug.LogWarning("PatrolResponse: PatrolMovement is missing.");
-            return;
-        }
-
-        if (blockingPoint == null)
-        {
-            Debug.LogWarning("PatrolResponse: BlockingPoint is missing.");
-            return;
-        }
-
-        if (currentState != ResponseState.Idle)
-        {
-            return;
-        }
-
-        if (!restrictedArea.IsPlayerInside)
-        {
-            return;
-        }
-
-        if (patrolDetection.CurrentState !=
-            PatrolDetection.DetectionState.Detected)
-        {
-            return;
-        }
-
-        StartSecurityResponse();
+        return;
     }
+
+    if (patrolDetection == null)
+    {
+        Debug.LogWarning(
+            "PatrolResponse: PatrolDetection is missing."
+        );
+
+        return;
+    }
+
+    if (patrolMovement == null)
+    {
+        Debug.LogWarning(
+            "PatrolResponse: PatrolMovement is missing."
+        );
+
+        return;
+    }
+
+    if (blockingPoint == null)
+    {
+        Debug.LogWarning(
+            "PatrolResponse: BlockingPoint is missing."
+        );
+
+        return;
+    }
+
+    if (currentState == ResponseState.Idle)
+    {
+        CheckForSecurityViolation();
+        return;
+    }
+
+    if (currentState == ResponseState.Warning)
+    {
+        UpdateWarning();
+        return;
+    }
+}
 
     private void CheckForSecurityViolation()
     {

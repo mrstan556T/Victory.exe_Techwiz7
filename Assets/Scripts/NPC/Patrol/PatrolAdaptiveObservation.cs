@@ -103,10 +103,7 @@ public class PatrolAdaptiveObservation : MonoBehaviour
             return;
         }
 
-        if (patrolDetection.IsPlayerDetected)
-        {
-            lastKnownPlayerAvailable = true;
-        }
+        lastKnownPlayerAvailable = patrolDetection.IsPlayerDetected;
     }
 
     public int GetDetectionValue()

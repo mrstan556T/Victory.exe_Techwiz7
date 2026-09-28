@@ -1,0 +1,100 @@
+{
+  "chapterId": "CHAPTER_03",
+  "chapterTitle": "Rook Hale - Electronics Counter",
+
+  "completionConversationId": "ROOK_CH3_01",
+
+  "npcs": [
+    {
+      "npcId": "ROOK_HALE",
+      "displayName": "Rook Hale"
+    }
+  ],
+
+  "events": [],
+
+  "conversations": [
+    {
+      "id": "ROOK_CH3_01",
+      "npcId": "ROOK_HALE",
+
+      "prompt": {
+        "speaker": "Kael",
+        "text": "Hello, Mr. Rook Hale."
+      },
+
+      "lines": [
+        {
+          "speaker": "Kael",
+          "text": "Hello, Mr. Rook Hale."
+        },
+        {
+          "speaker": "Rook",
+          "text": "What?"
+        },
+        {
+          "speaker": "Kael",
+          "text": "May I ask you some questions about Mr. Evan?"
+        },
+        {
+          "speaker": "Rook",
+          "text": "What a nuisance."
+        },
+        {
+          "speaker": "Rook",
+          "text": "Go ahead."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Have you had any contact with Mr. Evan recently?"
+        },
+        {
+          "speaker": "Rook",
+          "text": "No."
+        },
+        {
+          "speaker": "Rook",
+          "text": "He often goes out to buy things, but he usually takes the path behind his house, so I rarely see him around here."
+        },
+        {
+          "speaker": "Kael",
+          "text": "The path behind his house?"
+        },
+        {
+          "speaker": "Rook",
+          "text": "There's a shortcut behind his house that allows him to get home faster."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Does anyone else know about this path?"
+        },
+        {
+          "speaker": "Rook",
+          "text": "He's an easygoing man, so he allows everyone to use it. But only a few delivery workers usually take that route."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Where were you around 7:30 PM?"
+        },
+        {
+          "speaker": "Rook",
+          "text": "I was still repairing a customer's phone at the time."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Sorry to bother you."
+        },
+        {
+          "speaker": "Rook",
+          "text": "Hmm!"
+        }
+      ],
+
+      "condition": {
+        "requiredConversationId": "",
+        "requiredEvidenceId": "",
+        "requiredObjectiveId": ""
+      }
+    }
+  ]
+}

@@ -49,6 +49,8 @@ public class PatrolAdaptiveAI : MonoBehaviour
 
         // load the runtime model
         LoadModel();
+
+        decisionTimer = decisionInterval;
     }
 
     private void Start()

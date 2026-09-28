@@ -1,0 +1,32 @@
+{
+  "id": "GORDON_WARNING_01",
+  "npcId": "GORDON",
+
+  "prompt": {
+    "speaker": "Kael",
+    "text": "Hello, sir. May I enter the courtyard to investigate the case?"
+  },
+
+  "lines": [
+    {
+      "speaker": "Kael",
+      "text": "Hello, sir. May I enter the courtyard to investigate the case?"
+    },
+    {
+      "speaker": "Gordon",
+      "text": "I'm sorry, but this is private property belonging to the materials company. No one is allowed inside."
+    },
+    {
+      "speaker": "Kael",
+      "text": "But there may be important clues inside."
+    },
+    {
+      "speaker": "Gordon",
+      "text": "I'm sorry, but I can't help you. I'm only following orders from my superiors."
+    }
+  ],
+
+  "condition": {
+    "requiredConversationId": ""
+  }
+}

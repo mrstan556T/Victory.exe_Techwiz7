@@ -11,6 +11,9 @@ public class PatrolAdaptiveActionController : MonoBehaviour
     [Header("Investigation")]
     [SerializeField] private Transform investigationPoint;
 
+    private PatrolAdaptiveAction lastAction;
+    private bool hasExecutedAction;
+
     private void Awake()
     {
         //get patrol components
@@ -55,6 +58,22 @@ public class PatrolAdaptiveActionController : MonoBehaviour
             return;
         }
 
+        if (hasExecutedAction &&
+            lastAction == action)
+        {
+            if (action == PatrolAdaptiveAction.ContinueRoute &&
+                patrolMovement != null &&
+                patrolMovement.IsAtOverrideTarget)
+            {
+                patrolMovement.ResumePatrol();
+            }
+
+            return;
+        }
+
+        lastAction = action;
+        hasExecutedAction = true;
+
         //execute the selected adaptive action
         switch (action)
         {
@@ -84,7 +103,10 @@ public class PatrolAdaptiveActionController : MonoBehaviour
             return;
         }
 
-        patrolMovement.ResumePatrol();
+        if (patrolMovement.IsAtOverrideTarget || patrolMovement.IsMovingToOverrideTarget)
+        {
+            patrolMovement.ResumePatrol();
+        }
     }
 
     private void ExecuteInvestigateLocation()
