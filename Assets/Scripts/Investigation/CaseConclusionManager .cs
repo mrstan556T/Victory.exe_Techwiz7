@@ -7,6 +7,10 @@ public class CaseConclusionManager : MonoBehaviour
 {
     [Header("Open Button")]
     [SerializeField] private Button openCaseButton;
+    [Header("Case Unlock")]
+    [SerializeField] private int requiredEvidenceCount = 5;
+    [SerializeField] private string requiredConversationId = "JACE_CH6_01";
+    private bool canOpenCase = false;
     [Header("Main Panels")]
     [SerializeField] private GameObject conclusionPanel;
     [SerializeField] private GameObject deductionPanel;
@@ -96,18 +100,29 @@ public class CaseConclusionManager : MonoBehaviour
     }
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        if (Keyboard.current == null)
+            return;
+
+        if (!Keyboard.current.rKey.wasPressedThisFrame)
+            return;
+
+        CheckCaseUnlock();
+
+        if (!canOpenCase)
         {
-            if (conclusionPanel != null && !conclusionPanel.activeSelf)
-            {
-                OpenCaseConclusion();
-            }
+            Debug.Log("Case is not unlocked yet.");
+            return;
+        }
+
+        if (conclusionPanel != null && !conclusionPanel.activeSelf)
+        {
+            OpenCaseConclusion();
         }
     }
     private void Start()
     {
         CreateSuspectCards();
-        OpenCaseConclusion();
+        CheckCaseUnlock();
     }
     private void CreateSuspectCards()
     {
@@ -264,5 +279,29 @@ public class CaseConclusionManager : MonoBehaviour
 
         if (cameraController != null)
             cameraController.EnableGameplayInput();
+    }
+    
+    private void CheckCaseUnlock()
+    {
+        bool hasEnoughEvidence = GetCollectedEvidenceCount() >= requiredEvidenceCount;
+
+        bool conversationCompleted =
+            StoryManager.Instance != null &&
+            StoryManager.Instance.IsConversationCompleted(
+                requiredConversationId
+            );
+
+        canOpenCase = hasEnoughEvidence && conversationCompleted;
+
+        Debug.Log(
+            $"Case Unlock | Evidence: {hasEnoughEvidence} | " +
+            $"Jace Conversation: {conversationCompleted} | " +
+            $"Can Open Case: {canOpenCase}"
+        );
+    }
+    private int GetCollectedEvidenceCount()
+    {
+        // TODO: lấy số evidence đã collect từ EvidenceManager
+        return 0;
     }
 }

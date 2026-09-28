@@ -468,6 +468,14 @@ public class StoryManager : MonoBehaviour
         }
     }
 
+    public bool IsConversationCompleted(string conversationId)
+    {
+        if (string.IsNullOrEmpty(conversationId))
+            return false;
+
+        return completedConversations.Contains(conversationId);
+    }
+
 
     // =========================================================
     // CHAPTER COMPLETE
