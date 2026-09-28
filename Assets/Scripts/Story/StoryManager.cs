@@ -342,7 +342,7 @@ public class StoryManager : MonoBehaviour
 
         if (ObjectiveManager.Instance != null)
         {
-            ObjectiveManager.Instance.CompleteObjective();
+            ObjectiveManager.Instance.CompleteObjective(objectiveId);
         }
 
         CompleteCurrentEvent();

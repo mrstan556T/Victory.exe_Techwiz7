@@ -2,26 +2,28 @@
   "chapterId": 4,
   "chapterTitle": "THE CLOTHING STALL",
   "completionConversationId": "NORA_CH4_01",
-
   "npcs": [
     {
       "npcId": "NORA_VALE",
       "displayName": "Nora Vale"
     }
   ],
-
-  "events": [],
-
+  "events": [
+    {
+      "id": "OBJECTIVE_07",
+      "type": "objective",
+      "objectiveId": "TALK_TO_NORA",
+      "objectiveText": "Talk to Nora Vale."
+    }
+  ],
   "conversations": [
     {
       "id": "NORA_CH4_01",
       "npcId": "NORA_VALE",
-
       "prompt": {
         "speaker": "Kael",
         "text": "Good evening, Ms. Nora."
       },
-
       "lines": [
         {
           "speaker": "Nora",
@@ -68,9 +70,15 @@
           "text": "Goodbye, Detective."
         }
       ],
-
       "condition": {
-        "requiredConversationId": "ROOK_CH3_01"
+        "requiredConversationId": "",
+        "requiredEvidenceId": "",
+        "requiredObjectiveId": "TALK_TO_NORA"
+      },
+      "onComplete": {
+        "completeObjectiveId": "TALK_TO_NORA",
+        "nextObjectiveId": "TALK_TO_JACE",
+        "nextObjectiveText": "Talk to Jace Renn."
       }
     }
   ]

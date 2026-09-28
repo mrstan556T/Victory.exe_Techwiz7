@@ -1,28 +1,29 @@
 {
   "chapterId": "CHAPTER_03",
   "chapterTitle": "Rook Hale - Electronics Counter",
-
   "completionConversationId": "ROOK_CH3_01",
-
   "npcs": [
     {
       "npcId": "ROOK_HALE",
       "displayName": "Rook Hale"
     }
   ],
-
-  "events": [],
-
+  "events": [
+    {
+      "id": "OBJECTIVE_06",
+      "type": "objective",
+      "objectiveId": "TALK_TO_ROOK",
+      "objectiveText": "Talk to Rook Hale."
+    }
+  ],
   "conversations": [
     {
       "id": "ROOK_CH3_01",
       "npcId": "ROOK_HALE",
-
       "prompt": {
         "speaker": "Kael",
         "text": "Hello, Mr. Rook Hale."
       },
-
       "lines": [
         {
           "speaker": "Kael",
@@ -89,11 +90,15 @@
           "text": "Hmm!"
         }
       ],
-
       "condition": {
         "requiredConversationId": "",
         "requiredEvidenceId": "",
-        "requiredObjectiveId": ""
+        "requiredObjectiveId": "TALK_TO_ROOK"
+      },
+      "onComplete": {
+        "completeObjectiveId": "TALK_TO_ROOK",
+        "nextObjectiveId": "TALK_TO_NORA",
+        "nextObjectiveText": "Talk to Nora Vale."
       }
     }
   ]
