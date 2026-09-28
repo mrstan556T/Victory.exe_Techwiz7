@@ -1,0 +1,170 @@
+{
+  "chapterId": "CHAPTER_01",
+  "chapterTitle": "The Beginning",
+
+  "events": [
+    {
+      "id": "INTRO_01",
+      "type": "narration",
+      "speaker": "Dark Screen",
+      "text": "July 26, 2148. At the headquarters of the Cyber Crime Investigation Bureau, I was assigned to investigate a murder that took place at an old electronics store called Rerir."
+    },
+    {
+      "id": "INTRO_02",
+      "type": "narration",
+      "speaker": "Dark Screen",
+      "text": "According to the preliminary report, the victim was Evan Cole, the owner of the old electronics store. He was found dead a few hours ago."
+    },
+    {
+      "id": "INTRO_03",
+      "type": "narration",
+      "speaker": "Dark Screen",
+      "text": "I quickly headed to the crime scene to gather clues."
+    },
+    {
+      "id": "OBJECTIVE_01",
+      "type": "objective",
+      "objectiveId": "GO_TO_CRIME_SCENE",
+      "objectiveText": "Go to the crime scene."
+    },
+    {
+      "id": "KAEL_01",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "The room is pretty dark. There should be a light switch somewhere around here."
+    },
+    {
+      "id": "OBJECTIVE_02",
+      "type": "objective",
+      "objectiveId": "FIND_LIGHT_SWITCH",
+      "objectiveText": "Find the light switch and turn on the lights."
+    },
+    {
+      "id": "KAEL_02",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "That's better. I should investigate the area."
+    },
+    {
+      "id": "OBJECTIVE_03",
+      "type": "objective",
+      "objectiveId": "INVESTIGATE_BODY",
+      "objectiveText": "Approach the body and investigate."
+    },
+    {
+      "id": "KAEL_03",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "The victim fell forward. It looks like he was attacked from behind. The estimated time of death is 18:30."
+    },
+    {
+      "id": "KAEL_04",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "There is a black burn mark on the victim's NeuroLink."
+    },
+    {
+      "id": "KAEL_05",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "He was facing the cargo box. Perhaps he had just taken something from it."
+    },
+    {
+      "id": "KAEL_06",
+      "type": "dialogue",
+      "speaker": "Kael",
+      "text": "The crime scene has already been sealed off. Only a few residents are still around. I should ask them for some information."
+    },
+    {
+      "id": "OBJECTIVE_04",
+      "type": "objective",
+      "objectiveId": "TALK_TO_RESIDENTS",
+      "objectiveText": "Talk to the residents around the crime scene."
+    }
+  ],
+
+  "conversations": [
+    {
+      "id": "MIRA_CH1_01",
+      "npcId": "MIRA_KANE",
+
+      "prompt": {
+        "speaker": "Kael",
+        "text": "Hello."
+      },
+
+      "lines": [
+        {
+          "speaker": "Kael",
+          "text": "Hello."
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "Hello. Can I help you?"
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "This store has all kinds of products. If you're looking for something, I might be able to help."
+        },
+        {
+          "speaker": "Kael",
+          "text": "I'm not here to buy anything. I'm investigating Evan Cole. Did you know him?"
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "Evan? He was a kind person. He always helped people and kept his promises."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Did he ever break a promise?"
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "Evan received an AeroFilter-X from an old friend. It's a rare and valuable component."
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "He planned to donate it to the hospital."
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "If it were me, I'd sell it."
+        },
+        {
+          "speaker": "Kael",
+          "text": "You didn't seem very happy about his decision."
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "Life is hard. Why should anyone care about other people?"
+        },
+        {
+          "speaker": "Kael",
+          "text": "Did you notice anything unusual about him recently?"
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "No. He was just busy with his work."
+        },
+        {
+          "speaker": "Kael",
+          "text": "What about around 18:30? Did you see him?"
+        },
+        {
+          "speaker": "Mira Kane",
+          "text": "He was probably stocking the shelves. As far as I know, he was alone."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Thank you for your time."
+        }
+      ],
+
+      "condition": {
+        "requiredConversationId": "",
+        "requiredEvidenceId": "",
+        "requiredObjectiveId": ""
+      }
+    }
+  ]
+}
