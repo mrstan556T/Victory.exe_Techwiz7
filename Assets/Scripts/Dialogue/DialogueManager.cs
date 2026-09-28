@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class DialogueManager : MonoBehaviour
@@ -7,8 +8,12 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private DialogueUI dialogueUI;
 
     private ConversationData currentConversation;
+
     private int currentLineIndex;
+
     private bool isDialogueActive;
+
+    private Action onDialogueComplete;
 
     public bool IsDialogueActive => isDialogueActive;
 
@@ -23,6 +28,10 @@ public class DialogueManager : MonoBehaviour
         Instance = this;
     }
 
+    // =========================================================
+    // NPC DIALOGUE
+    // =========================================================
+
     public void StartDialogue(ConversationData conversation)
     {
         if (conversation == null)
@@ -33,22 +42,70 @@ public class DialogueManager : MonoBehaviour
             return;
 
         currentConversation = conversation;
+
         currentLineIndex = 0;
+
         isDialogueActive = true;
+
+        onDialogueComplete = null;
 
         dialogueUI.ShowDialogue(
             conversation.lines[currentLineIndex]
         );
     }
 
+    // =========================================================
+    // STORY EVENT DIALOGUE
+    // =========================================================
+
+    public void StartStoryDialogue(
+        string speaker,
+        string text,
+        Action onComplete)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        currentConversation = null;
+
+        currentLineIndex = 0;
+
+        isDialogueActive = true;
+
+        onDialogueComplete = onComplete;
+
+        DialogueLine line = new DialogueLine
+        {
+            speaker = speaker,
+            text = text
+        };
+
+        dialogueUI.ShowDialogue(line);
+    }
+
+    // =========================================================
+    // NEXT LINE
+    // =========================================================
+
     public void NextLine()
     {
         if (!isDialogueActive)
             return;
 
+        // Story dialogue only has one line.
+        if (currentConversation == null)
+        {
+            EndDialogue();
+            return;
+        }
+
         currentLineIndex++;
 
-        if (currentLineIndex >= currentConversation.lines.Length)
+        if (currentLineIndex >=
+            currentConversation.lines.Length)
         {
             EndDialogue();
             return;
@@ -59,20 +116,39 @@ public class DialogueManager : MonoBehaviour
         );
     }
 
+    // =========================================================
+    // END
+    // =========================================================
+
     public void EndDialogue()
     {
+        if (!isDialogueActive)
+            return;
+
         isDialogueActive = false;
 
+        Action callback = onDialogueComplete;
+
+        onDialogueComplete = null;
+
+        // NPC dialogue
         if (currentConversation != null)
         {
-            StoryManager.Instance.CompleteConversation(
-                currentConversation.id
-            );
+            if (StoryManager.Instance != null)
+            {
+                StoryManager.Instance.CompleteConversation(
+                    currentConversation.id
+                );
+            }
         }
 
         currentConversation = null;
+
         currentLineIndex = 0;
 
         dialogueUI.HideDialogue();
+
+        // Story dialogue callback
+        callback?.Invoke();
     }
 }
