@@ -1290,8 +1290,6 @@ GameObject:
   - component: {fileID: 9005570838100483660}
   - component: {fileID: 3625531564807683963}
   - component: {fileID: 9165720525738714389}
-  - component: {fileID: 4505192609053945922}
-  - component: {fileID: 1533274777492674553}
   - component: {fileID: 4959666189518544103}
   m_Layer: 0
   m_Name: npc_@02
@@ -1505,34 +1503,6 @@ MonoBehaviour:
   minDelay: 5
   maxDelay: 12
   volume: 1
---- !u!114 &4505192609053945922
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5749066473463857088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5c84563efc75f24f89d4b812d26245a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  dialogueLines: []
---- !u!114 &1533274777492674553
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5749066473463857088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62f6ecbd900b97347b2294b6649b18b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPCInteraction
-  interactionPrompt: {fileID: 0}
-  talkButton: {fileID: 0}
-  dialogueData: {fileID: 4505192609053945922}
 --- !u!135 &4959666189518544103
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1548,7 +1518,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
