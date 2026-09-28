@@ -32,6 +32,15 @@ public class StoryIntroUI : MonoBehaviour
 
     public void PlayIntro(StoryEvent[] events)
     {
+        // KIỂM TRA: Nếu người chơi đang vào từ Continue thì chặn hoàn toàn intro
+        if (SaveManager.IsLoadingSavedGame)
+        {
+            if (darkScenePanel != null) darkScenePanel.SetActive(false);
+            if (introText != null) introText.text = "";
+            IsPlaying = false;
+            return;
+        }
+
         if (events == null || events.Length == 0)
             return;
 
@@ -45,14 +54,12 @@ public class StoryIntroUI : MonoBehaviour
         );
     }
 
-    private IEnumerator PlayIntroSequence(
-        StoryEvent[] events)
+    private IEnumerator PlayIntroSequence(StoryEvent[] events)
     {
         IsPlaying = true;
 
-        darkScenePanel.SetActive(true);
-
-        introText.text = "";
+        if (darkScenePanel != null) darkScenePanel.SetActive(true);
+        if (introText != null) introText.text = "";
 
         foreach (StoryEvent storyEvent in events)
         {
@@ -67,23 +74,22 @@ public class StoryIntroUI : MonoBehaviour
                 delayAfterText
             );
 
-            introText.text = "";
+            if (introText != null) introText.text = "";
         }
 
-        darkScenePanel.SetActive(false);
+        if (darkScenePanel != null) darkScenePanel.SetActive(false);
 
         IsPlaying = false;
-
         introCoroutine = null;
     }
 
     private IEnumerator TypeText(string text)
     {
-        introText.text = "";
+        if (introText != null) introText.text = "";
 
         foreach (char character in text)
         {
-            introText.text += character;
+            if (introText != null) introText.text += character;
 
             yield return new WaitForSeconds(
                 characterDelay
@@ -102,9 +108,8 @@ public class StoryIntroUI : MonoBehaviour
             introCoroutine = null;
         }
 
-        introText.text = "";
-
-        darkScenePanel.SetActive(false);
+        if (introText != null) introText.text = "";
+        if (darkScenePanel != null) darkScenePanel.SetActive(false);
 
         IsPlaying = false;
     }

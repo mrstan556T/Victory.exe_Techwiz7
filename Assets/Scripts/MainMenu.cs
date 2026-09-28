@@ -6,89 +6,123 @@ using TMPro;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("Tên Scene Màn Chơi")]
-    [SerializeField] private string gameplaySceneName = "URP_Rooftop_Market";
+    [Header("Tên Scene Màn Chơi Mặc Định")]
+    [SerializeField] private string defaultGameplayScene = "URP_Rooftop_Market";
 
-    [Header("Hiệu Ứng Phản Hồi")]
-    [SerializeField] private GameObject loadingText; // Biến cũ của bạn (kéo LoadingPanel hoặc LoadingText vào)
-    [SerializeField] private Slider loadingSlider;    // Biến mới: Kéo LoadingSlider vào đây
-    [SerializeField] private TextMeshProUGUI loadingPercentageText; // Biến mới (tùy chọn): Kéo LoadingText (nếu dùng TMP) vào để hiện số %
+    [Header("Hiệu Ứng Phản Hồi")]
+    [SerializeField] private GameObject loadingText;
+    [SerializeField] private Slider loadingSlider;
+    [SerializeField] private TextMeshProUGUI loadingPercentageText;
 
-    [Header("Quản Lý Giao Diện")]
-    [SerializeField] private GameObject mainMenuGroup; // Kéo MainMenuGroup vào đây
-    [SerializeField] private GameObject settingsPanel; // Kéo SettingsPanel vào đây
+    [Header("Quản Lý Giao Diện")]
+    [SerializeField] private GameObject mainMenuGroup;
+    [SerializeField] private GameObject settingsPanel;
 
-    private bool isStarting = false;
+    private bool isStarting = false;
 
-    public void ContinueGame() => StartGame();
-    public void PlayGame() => StartGame();
+    // 1. NÚT CONTINUE (TIẾP TỤC TIẾN TRÌNH CŨ)
+    public void ContinueGame()
+    {
+        if (isStarting) return;
 
-    private void StartGame()
-    {
-        if (isStarting) return;
-        isStarting = true;
+        // Nếu có dữ liệu lưu thì tiếp tục, ngược lại chạy game mới
+        if (PlayerPrefs.HasKey("SavedScene") && PlayerPrefs.HasKey("PlayerX"))
+        {
+            SaveManager.IsLoadingSavedGame = true; // Bật cờ chặn màn hình tối Intro
+            string targetScene = PlayerPrefs.GetString("SavedScene");
+            StartGameProcess(targetScene, true);
+        }
+        else
+        {
+            // Chưa có file save thì chạy lượt chơi mới
+            PlayGame();
+        }
+    }
 
-        if (mainMenuGroup != null) mainMenuGroup.SetActive(false);
-        if (loadingText != null) loadingText.SetActive(true);
+    // 2. NÚT PLAY / NEW GAME (CHƠI MỚI TỪ ĐẦU)
+    public void PlayGame()
+    {
+        if (isStarting) return;
 
-        StartCoroutine(LoadSceneAsyncProcess());
-    }
+        // Xóa sạch vị trí cũ để không bị nhận nhầm
+        PlayerPrefs.DeleteKey("PlayerX");
+        PlayerPrefs.DeleteKey("PlayerY");
+        PlayerPrefs.DeleteKey("PlayerZ");
+        PlayerPrefs.DeleteKey("SavedScene");
+        PlayerPrefs.Save();
 
-    private IEnumerator LoadSceneAsyncProcess()
-    {
-        AsyncOperation operation = SceneManager.LoadSceneAsync(gameplaySceneName);
-        operation.allowSceneActivation = false; // Ngăn chuyển cảnh đột ngột để hiển thị tiến trình mượt mà
+        SaveManager.IsLoadingSavedGame = false; // Tắt cờ để Intro diễn ra bình thường
 
-        while (!operation.isDone)
-        {
-            // Unity nạp ngầm từ 0.0f đến 0.9f
-            float progress = Mathf.Clamp01(operation.progress / 0.9f);
+        StartGameProcess(defaultGameplayScene, false);
+    }
 
-            // Cập nhật giá trị vào thanh Slider (từ 0 đến 1)
-            if (loadingSlider != null)
-            {
-                loadingSlider.value = progress;
-            }
+    private void StartGameProcess(string sceneName, bool shouldLoadPos)
+    {
+        isStarting = true;
 
-            // Cập nhật chữ phần trăm nếu có gán
-            if (loadingPercentageText != null)
-            {
-                loadingPercentageText.text = $"Loading... {(progress * 100f):F0}%";
-            }
+        if (mainMenuGroup != null) mainMenuGroup.SetActive(false);
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (loadingText != null) loadingText.SetActive(true);
 
-            // Khi tài nguyên map đã tải xong hoàn toàn ngầm
-            if (operation.progress >= 0.9f)
-            {
-                if (loadingSlider != null) loadingSlider.value = 1f;
-                if (loadingPercentageText != null) loadingPercentageText.text = "Loading... 100%";
+        StartCoroutine(LoadSceneAsyncProcess(sceneName, shouldLoadPos));
+    }
 
-                yield return new WaitForSeconds(0.4f); // Giữ lại 0.4s để người chơi thấy thanh đã đầy 100%
-                operation.allowSceneActivation = true; // Kích hoạt vào Scene mới
-            }
+    private IEnumerator LoadSceneAsyncProcess(string sceneName, bool shouldLoadPos)
+    {
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
+        operation.allowSceneActivation = false;
 
-            yield return null;
-        }
-    }
+        while (!operation.isDone)
+        {
+            float progress = Mathf.Clamp01(operation.progress / 0.9f);
 
-    // 1. Khi bấm Setting: TẮT MENU CHÍNH - BẬT BẢNG SETTING
-    public void OpenSettings()
-    {
-        if (mainMenuGroup != null) mainMenuGroup.SetActive(false);
-        if (settingsPanel != null) settingsPanel.SetActive(true);
-    }
+            if (loadingSlider != null)
+            {
+                loadingSlider.value = progress;
+            }
 
-    // 2. Khi bấm Quay lại / Đóng ở Setting: TẮT BẢNG SETTING - BẬT LẠI MENU CHÍNH
-    public void CloseSettings()
-    {
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        if (mainMenuGroup != null) mainMenuGroup.SetActive(true);
-    }
+            if (loadingPercentageText != null)
+            {
+                loadingPercentageText.text = $"Loading... {(progress * 100f):F0}%";
+            }
 
-    public void QuitGame()
-    {
-        Application.Quit();
-        #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-        #endif
-    }
+            if (operation.progress >= 0.9f)
+            {
+                if (loadingSlider != null) loadingSlider.value = 1f;
+                if (loadingPercentageText != null) loadingPercentageText.text = "Loading... 100%";
+
+                yield return new WaitForSeconds(0.4f);
+
+                // Nếu là Continue, báo cho SaveManager biết cần dịch chuyển nhân vật
+                if (shouldLoadPos)
+                {
+                    SaveManager.TriggerPositionLoadOnNextScene();
+                }
+
+                operation.allowSceneActivation = true;
+            }
+
+            yield return null;
+        }
+    }
+
+    public void OpenSettings()
+    {
+        if (mainMenuGroup != null) mainMenuGroup.SetActive(false);
+        if (settingsPanel != null) settingsPanel.SetActive(true);
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (mainMenuGroup != null) mainMenuGroup.SetActive(true);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #endif
+    }
 }
