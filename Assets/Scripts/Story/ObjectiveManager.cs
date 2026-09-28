@@ -24,10 +24,11 @@ public class ObjectiveManager : MonoBehaviour
         HideObjective();
     }
 
-    public void SetObjective(
-        string objectiveId,
-        string text)
+    public void SetObjective(string objectiveId, string text)
     {
+        if (string.IsNullOrEmpty(objectiveId))
+            return;
+
         CurrentObjectiveId = objectiveId;
 
         if (objectivePanel != null)
@@ -45,10 +46,21 @@ public class ObjectiveManager : MonoBehaviour
         );
     }
 
-    public void CompleteObjective()
+    public void CompleteObjective(string objectiveId)
     {
         if (string.IsNullOrEmpty(CurrentObjectiveId))
             return;
+
+        // Không cho complete nhầm objective
+        if (CurrentObjectiveId != objectiveId)
+        {
+            Debug.LogWarning(
+                $"Cannot complete objective '{objectiveId}'. " +
+                $"Current objective is '{CurrentObjectiveId}'."
+            );
+
+            return;
+        }
 
         Debug.Log(
             $"Objective completed: {CurrentObjectiveId}"

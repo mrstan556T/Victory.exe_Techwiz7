@@ -86,8 +86,8 @@
     {
       "id": "OBJECTIVE_04",
       "type": "objective",
-      "objectiveId": "TALK_TO_RESIDENTS",
-      "objectiveText": "Talk to the residents around the crime scene."
+      "objectiveId": "TALK_TO_LENA",
+      "objectiveText": "Talk to Lena Park"
     }
   ],
 
@@ -171,8 +171,13 @@
       "condition": {
         "requiredConversationId": "",
         "requiredEvidenceId": "",
-        "requiredObjectiveId": ""
-      }
+        "requiredObjectiveId": "TALK_TO_MIRA"
+      },
+      "onComplete": {
+      "completeObjectiveId": "TALK_TO_MIRA",
+      "nextObjectiveId": "TALK_TO_LENA",
+      "nextObjectiveText": "Talk to Lena Park."
+  }
     }
   ]
 }

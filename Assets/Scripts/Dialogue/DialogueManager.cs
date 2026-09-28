@@ -146,9 +146,42 @@ public class DialogueManager : MonoBehaviour
 
         currentLineIndex = 0;
 
+        CompleteConversation();
+
         dialogueUI.HideDialogue();
 
         // Story dialogue callback
         callback?.Invoke();
+    }
+
+    private void CompleteConversation()
+    {
+        if (currentConversation == null)
+            return;
+
+        ConversationCompletion completion =
+            currentConversation.onComplete;
+
+        if (completion == null)
+            return;
+
+        // Complete current objective
+        if (ObjectiveManager.Instance != null &&
+            !string.IsNullOrEmpty(completion.completeObjectiveId))
+        {
+            ObjectiveManager.Instance.CompleteObjective(
+                completion.completeObjectiveId
+            );
+        }
+
+        // Set next objective
+        if (ObjectiveManager.Instance != null &&
+            !string.IsNullOrEmpty(completion.nextObjectiveId))
+        {
+            ObjectiveManager.Instance.SetObjective(
+                completion.nextObjectiveId,
+                completion.nextObjectiveText
+            );
+        }
     }
 }

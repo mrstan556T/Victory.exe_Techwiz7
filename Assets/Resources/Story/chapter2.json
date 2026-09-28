@@ -2,26 +2,28 @@
   "chapterId": "CHAPTER_02",
   "chapterTitle": "Lena Park - Cybernetic Repair Shop",
   "completionConversationId": "LENA_CH2_01",
-
   "npcs": [
     {
       "npcId": "LENA_PARK",
       "displayName": "Lena Park"
     }
   ],
-
-  "events": [],
-
+  "events": [
+    {
+      "id": "OBJECTIVE_05",
+      "type": "objective",
+      "objectiveId": "TALK_TO_LENA",
+      "objectiveText": "Talk to Lena Park."
+    }
+  ],
   "conversations": [
     {
       "id": "LENA_CH2_01",
       "npcId": "LENA_PARK",
-
       "prompt": {
         "speaker": "Kael",
         "text": "Good evening, Ms. Lena."
       },
-
       "lines": [
         {
           "speaker": "Kael",
@@ -100,11 +102,15 @@
           "text": "That's very useful information. Thank you, Ms. Lena."
         }
       ],
-
       "condition": {
         "requiredConversationId": "",
         "requiredEvidenceId": "",
-        "requiredObjectiveId": ""
+        "requiredObjectiveId": "TALK_TO_LENA"
+      },
+      "onComplete": {
+        "completeObjectiveId": "TALK_TO_LENA",
+        "nextObjectiveId": "TALK_TO_ROOK",
+        "nextObjectiveText": "Talk to Rook Hale."
       }
     }
   ]

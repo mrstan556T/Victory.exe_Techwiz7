@@ -243,6 +243,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &263048192 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6740602461338078588, guid: 07b8a0bc0096a0742a85e2f6cd6ea698, type: 3}
+  m_PrefabInstance: {fileID: 7243033823315686200}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &408369352 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ca6bf49dc64b716489a0b3f5679f7821, type: 3}
@@ -286,8 +297,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   target: {fileID: 5830605697502777505}
-  distance: 2.8
-  height: 0.5
+  characterRenderers: []
+  toggleViewKey: 118
+  tppDistance: 2.8
+  tppHeight: 0.5
+  fppDistance: -0.1
+  fppHeight: 0.5
+  fppWallPadding: 0.15
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  cameraRadius: 0.15
+  minCollisionDist: 0.2
+  smoothSpeed: 15
   mouseSensitivity: 2
   minVerticalAngle: -45
   maxVerticalAngle: 45
@@ -409,6 +431,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!225 &1458367387 stripped
+CanvasGroup:
+  m_CorrespondingSourceObject: {fileID: 2429936659791077852, guid: 07b8a0bc0096a0742a85e2f6cd6ea698, type: 3}
+  m_PrefabInstance: {fileID: 7243033823315686200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1591711233
 GameObject:
   m_ObjectHideFlags: 0
@@ -1375,6 +1402,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5313476763072846472, guid: 07b8a0bc0096a0742a85e2f6cd6ea698, type: 3}
+      propertyPath: nameText
+      value: 
+      objectReference: {fileID: 263048192}
+    - target: {fileID: 5313476763072846472, guid: 07b8a0bc0096a0742a85e2f6cd6ea698, type: 3}
+      propertyPath: canvasGroup
+      value: 
+      objectReference: {fileID: 1458367387}
     - target: {fileID: 5749066473463857088, guid: 07b8a0bc0096a0742a85e2f6cd6ea698, type: 3}
       propertyPath: m_Name
       value: ROOK HALE

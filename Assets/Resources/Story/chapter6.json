@@ -2,26 +2,28 @@
   "chapterId": 6,
   "chapterTitle": "THE DELIVERY MAN",
   "completionConversationId": "JACE_CH6_01",
-
   "npcs": [
     {
       "npcId": "JACE_RENN",
       "displayName": "Jace Renn"
     }
   ],
-
-  "events": [],
-
+  "events": [
+    {
+      "id": "OBJECTIVE_08",
+      "type": "objective",
+      "objectiveId": "TALK_TO_JACE",
+      "objectiveText": "Talk to Jace Renn."
+    }
+  ],
   "conversations": [
     {
       "id": "JACE_CH6_01",
       "npcId": "JACE_RENN",
-
       "prompt": {
         "speaker": "Kael",
         "text": "Hello."
       },
-
       "lines": [
         {
           "speaker": "Jace",
@@ -76,9 +78,15 @@
           "text": "Thank you for your time."
         }
       ],
-
       "condition": {
-        "requiredConversationId": "NORA_CH4_01"
+        "requiredConversationId": "",
+        "requiredEvidenceId": "",
+        "requiredObjectiveId": "TALK_TO_JACE"
+      },
+      "onComplete": {
+        "completeObjectiveId": "TALK_TO_JACE",
+        "nextObjectiveId": "",
+        "nextObjectiveText": ""
       }
     }
   ]

@@ -10,4 +10,5 @@ public class ConversationData
     public DialogueLine prompt;
 
     public DialogueCondition condition;
+    public ConversationCompletion onComplete;
 }
