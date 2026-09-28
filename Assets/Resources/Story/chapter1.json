@@ -1,6 +1,14 @@
 {
   "chapterId": "CHAPTER_01",
   "chapterTitle": "The Beginning",
+  "completionConversationId": "MIRA_CH1_01",
+
+    "npcs": [
+    {
+      "npcId": "MIRA_KANE",
+      "displayName": "Mira Kane"
+    }
+  ],
 
   "events": [
     {

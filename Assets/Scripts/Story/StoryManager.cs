@@ -1,13 +1,15 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Collections;
 
 public class StoryManager : MonoBehaviour
 {
     public static StoryManager Instance { get; private set; }
 
     [Header("Story")]
-    [SerializeField] private string chapterFileName = "chapter1";
+    [SerializeField] private string startingChapter = "chapter1";
+
+    private string currentChapterFileName;
 
     [Header("Intro")]
     [SerializeField] public StoryIntroUI storyIntroUI;
@@ -15,9 +17,7 @@ public class StoryManager : MonoBehaviour
     private StoryData storyData;
 
     private int currentEventIndex;
-
     private StoryEvent currentEvent;
-
     private bool isRunning;
 
     private HashSet<string> completedEvents =
@@ -37,6 +37,11 @@ public class StoryManager : MonoBehaviour
     public StoryEvent CurrentEvent =>
         currentEvent;
 
+
+    // =========================================================
+    // UNITY
+    // =========================================================
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -47,7 +52,7 @@ public class StoryManager : MonoBehaviour
 
         Instance = this;
 
-        LoadChapter();
+        LoadChapter(startingChapter);
     }
 
     private void Start()
@@ -55,11 +60,12 @@ public class StoryManager : MonoBehaviour
         StartChapter();
     }
 
+
     // =========================================================
     // LOAD CHAPTER
     // =========================================================
 
-    private void LoadChapter()
+    private bool LoadChapter(string chapterFileName)
     {
         TextAsset jsonFile =
             Resources.Load<TextAsset>(
@@ -73,29 +79,36 @@ public class StoryManager : MonoBehaviour
                 $"Resources/Story/{chapterFileName}.json"
             );
 
-            return;
+            return false;
         }
 
-        storyData =
+        StoryData loadedStory =
             JsonUtility.FromJson<StoryData>(
                 jsonFile.text
             );
 
-        if (storyData == null)
+        if (loadedStory == null)
         {
             Debug.LogError(
-                "Failed to parse story JSON."
+                $"Failed to parse story JSON: {chapterFileName}"
             );
 
-            return;
+            return false;
         }
+
+        storyData = loadedStory;
+
+        currentChapterFileName = chapterFileName;
 
         Debug.Log(
             $"Loaded chapter: " +
             $"{storyData.chapterId} - " +
             $"{storyData.chapterTitle}"
         );
+
+        return true;
     }
+
 
     // =========================================================
     // START CHAPTER
@@ -113,13 +126,76 @@ public class StoryManager : MonoBehaviour
         }
 
         currentEventIndex = 0;
-
         currentEvent = null;
 
         isRunning = true;
 
+        Debug.Log(
+            $"Starting chapter: " +
+            $"{storyData.chapterId}"
+        );
+
         PlayIntro();
     }
+
+
+    // =========================================================
+    // LOAD NEXT CHAPTER
+    // =========================================================
+
+    private void LoadNextChapter()
+    {
+        int currentChapterNumber =
+            GetChapterNumber(currentChapterFileName);
+
+        int nextChapterNumber =
+            currentChapterNumber + 1;
+
+        string nextChapterFileName =
+            $"chapter{nextChapterNumber}";
+
+        Debug.Log(
+            $"Trying to load next chapter: " +
+            $"{nextChapterFileName}"
+        );
+
+        if (!LoadChapter(nextChapterFileName))
+        {
+            Debug.Log(
+                $"No next chapter found. " +
+                $"Story completed."
+            );
+
+            isRunning = false;
+            return;
+        }
+
+        StartChapter();
+    }
+
+
+    private int GetChapterNumber(
+        string chapterFileName)
+    {
+        if (string.IsNullOrEmpty(chapterFileName))
+            return 0;
+
+        string number =
+            chapterFileName.Replace(
+                "chapter",
+                ""
+            );
+
+        if (int.TryParse(
+            number,
+            out int result))
+        {
+            return result;
+        }
+
+        return 0;
+    }
+
 
     // =========================================================
     // STORY EVENT RUNNER
@@ -130,10 +206,21 @@ public class StoryManager : MonoBehaviour
         if (!isRunning)
             return;
 
+        // IMPORTANT:
+        // Do NOT finish the chapter just because
+        // there are no story events.
+        //
+        // Some chapters are conversation-only.
+        //
         if (storyData.events == null ||
             currentEventIndex >= storyData.events.Length)
         {
-            FinishChapter();
+            Debug.Log(
+                $"No more story events in " +
+                $"{storyData.chapterId}. " +
+                $"Waiting for required conversation."
+            );
+
             return;
         }
 
@@ -175,6 +262,7 @@ public class StoryManager : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // DIALOGUE / NARRATION EVENT
     // =========================================================
@@ -187,6 +275,7 @@ public class StoryManager : MonoBehaviour
             CompleteCurrentEvent
         );
     }
+
 
     // =========================================================
     // OBJECTIVE EVENT
@@ -207,16 +296,8 @@ public class StoryManager : MonoBehaviour
             currentEvent.objectiveId,
             currentEvent.objectiveText
         );
-
-        // IMPORTANT:
-        // StoryManager now waits here.
-        //
-        // The gameplay system must call:
-        //
-        // StoryManager.Instance.CompleteObjective(
-        //     currentEvent.objectiveId
-        // );
     }
+
 
     // =========================================================
     // COMPLETE CURRENT EVENT
@@ -237,6 +318,7 @@ public class StoryManager : MonoBehaviour
 
         PlayNextEvent();
     }
+
 
     // =========================================================
     // COMPLETE OBJECTIVE
@@ -265,6 +347,7 @@ public class StoryManager : MonoBehaviour
 
         CompleteCurrentEvent();
     }
+
 
     // =========================================================
     // NPC CONVERSATION
@@ -304,11 +387,13 @@ public class StoryManager : MonoBehaviour
         return null;
     }
 
+
     private bool CheckCondition(
         DialogueCondition condition)
     {
         if (condition == null)
             return true;
+
 
         // Required conversation
         if (!string.IsNullOrEmpty(
@@ -321,6 +406,7 @@ public class StoryManager : MonoBehaviour
             }
         }
 
+
         // Required objective
         if (!string.IsNullOrEmpty(
             condition.requiredObjectiveId))
@@ -332,8 +418,14 @@ public class StoryManager : MonoBehaviour
             }
         }
 
+
         return true;
     }
+
+
+    // =========================================================
+    // COMPLETE CONVERSATION
+    // =========================================================
 
     public void CompleteConversation(
         string conversationId)
@@ -352,7 +444,30 @@ public class StoryManager : MonoBehaviour
             $"Conversation completed: " +
             $"{conversationId}"
         );
+
+
+        // =====================================================
+        // CHECK CHAPTER COMPLETION
+        // =====================================================
+
+        if (storyData != null &&
+            !string.IsNullOrEmpty(
+                storyData.completionConversationId))
+        {
+            if (conversationId ==
+                storyData.completionConversationId)
+            {
+                Debug.Log(
+                    $"Required conversation completed. " +
+                    $"Finishing chapter: " +
+                    $"{storyData.chapterId}"
+                );
+
+                FinishChapter();
+            }
+        }
     }
+
 
     // =========================================================
     // CHAPTER COMPLETE
@@ -360,6 +475,9 @@ public class StoryManager : MonoBehaviour
 
     private void FinishChapter()
     {
+        if (!isRunning)
+            return;
+
         isRunning = false;
 
         currentEvent = null;
@@ -368,7 +486,54 @@ public class StoryManager : MonoBehaviour
             $"Chapter completed: " +
             $"{CurrentChapterId}"
         );
+
+        LoadNextChapter();
     }
+
+
+    // =========================================================
+    // NPC DATA
+    // =========================================================
+
+    public NPCData GetNPCData(
+        string npcId)
+    {
+        if (storyData == null ||
+            storyData.npcs == null)
+        {
+            return null;
+        }
+
+        foreach (NPCData npc in storyData.npcs)
+        {
+            if (npc.npcId == npcId)
+            {
+                return npc;
+            }
+        }
+
+        return null;
+    }
+
+
+    public string GetNPCDisplayName(
+        string npcId)
+    {
+        NPCData npc =
+            GetNPCData(npcId);
+
+        if (npc == null)
+        {
+            Debug.LogWarning(
+                $"NPC not found: {npcId}"
+            );
+
+            return npcId;
+        }
+
+        return npc.displayName;
+    }
+
 
     // =========================================================
     // DEBUG
@@ -379,6 +544,7 @@ public class StoryManager : MonoBehaviour
         return isRunning;
     }
 
+
     public bool IsObjectiveCompleted(
         string objectiveId)
     {
@@ -386,6 +552,11 @@ public class StoryManager : MonoBehaviour
             objectiveId
         );
     }
+
+
+    // =========================================================
+    // INTRO
+    // =========================================================
 
     private void PlayIntro()
     {
@@ -410,7 +581,9 @@ public class StoryManager : MonoBehaviour
             return;
         }
 
-        storyIntroUI.PlayIntro(introEvents);
+        storyIntroUI.PlayIntro(
+            introEvents
+        );
 
         StartCoroutine(
             WaitForIntroComplete(
@@ -418,12 +591,18 @@ public class StoryManager : MonoBehaviour
             )
         );
     }
+
+
     private StoryEvent[] GetIntroEvents()
     {
         List<StoryEvent> introEvents =
             new List<StoryEvent>();
 
-        for (int i = currentEventIndex;
+        if (storyData.events == null)
+            return introEvents.ToArray();
+
+        for (
+            int i = currentEventIndex;
             i < storyData.events.Length;
             i++)
         {
@@ -433,24 +612,32 @@ public class StoryManager : MonoBehaviour
             if (storyEvent.type != "narration")
                 break;
 
-            introEvents.Add(storyEvent);
+            introEvents.Add(
+                storyEvent
+            );
         }
 
         return introEvents.ToArray();
     }
 
+
     private IEnumerator WaitForIntroComplete(
-    int introEventCount)
+        int introEventCount)
     {
         while (storyIntroUI.IsPlaying)
         {
             yield return null;
         }
 
-        for (int i = 0; i < introEventCount; i++)
+        for (
+            int i = 0;
+            i < introEventCount;
+            i++)
         {
             StoryEvent storyEvent =
-                storyData.events[currentEventIndex];
+                storyData.events[
+                    currentEventIndex
+                ];
 
             completedEvents.Add(
                 storyEvent.id

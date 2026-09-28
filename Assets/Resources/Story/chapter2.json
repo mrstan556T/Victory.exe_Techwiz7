@@ -1,0 +1,111 @@
+{
+  "chapterId": "CHAPTER_02",
+  "chapterTitle": "Lena Park - Cybernetic Repair Shop",
+  "completionConversationId": "LENA_CH2_01",
+
+  "npcs": [
+    {
+      "npcId": "LENA_PARK",
+      "displayName": "Lena Park"
+    }
+  ],
+
+  "events": [],
+
+  "conversations": [
+    {
+      "id": "LENA_CH2_01",
+      "npcId": "LENA_PARK",
+
+      "prompt": {
+        "speaker": "Kael",
+        "text": "Good evening, Ms. Lena."
+      },
+
+      "lines": [
+        {
+          "speaker": "Kael",
+          "text": "Good evening, Ms. Lena."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "..."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "You're not from around here, yet you know my name. You're a police officer, aren't you?"
+        },
+        {
+          "speaker": "Kael",
+          "text": "Something like that."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "Then what do you need to know?"
+        },
+        {
+          "speaker": "Kael",
+          "text": "About Mr. Evan?"
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "He was a good man. Responsible and optimistic."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Have you had any contact with him recently?"
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "We would occasionally run into each other on the street. I only introduced him to some of the new components I had in stock."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "I noticed that his NeuroLink was outdated. It could affect his nervous system, so I advised him to come to my shop and have it replaced. But he never came here."
+        },
+        {
+          "speaker": "Kael",
+          "text": "Did he show any unusual behavior recently?"
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "I'm not sure. But just by looking at his NeuroLink, I could tell that he might eventually develop memory problems."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "Old components can affect memory and the brain's processing speed."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "His work also frequently involved electrical equipment. Even a small electrical current could have a serious impact on his brain."
+        },
+        {
+          "speaker": "Kael",
+          "text": "How could such a small electrical current have that kind of effect?"
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "I've been selling cybernetic components for years. I can recognize it just by looking at the hardware."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "His NeuroLink was an outdated model, and it was already very old. Its load tolerance was extremely low, making it highly susceptible to burning out or even exploding, even under a weak electrical current."
+        },
+        {
+          "speaker": "Lena Park",
+          "text": "That's why I would often recommend newer components to him whenever we met."
+        },
+        {
+          "speaker": "Kael",
+          "text": "That's very useful information. Thank you, Ms. Lena."
+        }
+      ],
+
+      "condition": {
+        "requiredConversationId": "",
+        "requiredEvidenceId": "",
+        "requiredObjectiveId": ""
+      }
+    }
+  ]
+}
