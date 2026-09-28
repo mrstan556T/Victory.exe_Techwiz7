@@ -11,7 +11,7 @@ public class ColorConnectPuzzle : MonoBehaviour
         public Button button;
         public Image background;
         public int colorId;      // 0: Trống, 1..N: ID màu tương ứng
-        public bool isEndpoint;  // Điểm gốc cố định
+        public bool isEndpoint;  // Điểm gốc ban đầu
     }
 
     [Header("Bảng Giao Diện")]
@@ -19,8 +19,8 @@ public class ColorConnectPuzzle : MonoBehaviour
     [SerializeField] private List<PuzzleCell> cells = new List<PuzzleCell>();
 
     [Header("Xử Lý Xung Đột Hệ Thống")]
-    [SerializeField] private GameObject dialogueUICanvas;         // Kéo DialogueUI vào đây để tự tắt khi giải đố
-    [SerializeField] private MonoBehaviour playerCameraController; // Kéo script điều khiển camera/Player vào đây
+    [SerializeField] private GameObject dialogueUICanvas;         // Kéo đối tượng DialogueUI vào đây
+    [SerializeField] private MonoBehaviour playerCameraController; // Kéo script xoay camera của nhân vật vào đây
 
     [Header("Bảng Màu (Color Palette)")]
     [SerializeField] private Color emptyCellColor = new Color(0.12f, 0.14f, 0.17f, 1f);
@@ -40,13 +40,16 @@ public class ColorConnectPuzzle : MonoBehaviour
 
     [Header("Phản Hồi Ngoài Map Khi Giải Xong")]
     [SerializeField] private Light targetLight;
-    [SerializeField] private float lightIntensityOn = 4f;
+    [SerializeField] private float lightIntensityOn = 15f;
     [SerializeField] private Color lightTurnOnColor = Color.cyan;
 
     private const int GRID_SIZE = 7;
     private int activeColor = 0;
     private bool isDragging = false;
     private bool isSolved = false;
+
+    // Lưu trữ đường đi của từng màu: colorId -> danh sách index các ô theo thứ tự
+    private Dictionary<int, List<int>> colorPaths = new Dictionary<int, List<int>>();
 
     private void Start()
     {
@@ -72,10 +75,7 @@ public class ColorConnectPuzzle : MonoBehaviour
         if (isSolved) return;
         if (puzzlePanel != null) puzzlePanel.SetActive(true);
 
-        // 1. Tạm ẩn DialogueUI để tránh xung đột cản tia chuột Raycast
         if (dialogueUICanvas != null) dialogueUICanvas.SetActive(false);
-
-        // 2. Tắt script điều khiển camera và mở chuột tự do
         if (playerCameraController != null) playerCameraController.enabled = false;
         Time.timeScale = 0f;
 
@@ -87,10 +87,7 @@ public class ColorConnectPuzzle : MonoBehaviour
     {
         if (puzzlePanel != null) puzzlePanel.SetActive(false);
 
-        // 1. Phục hồi DialogueUI cho game
         if (dialogueUICanvas != null) dialogueUICanvas.SetActive(true);
-
-        // 2. Phục hồi thời gian và góc nhìn nhân vật
         Time.timeScale = 1f;
         if (playerCameraController != null) playerCameraController.enabled = true;
 
@@ -104,10 +101,32 @@ public class ColorConnectPuzzle : MonoBehaviour
 
         PuzzleCell cell = cells[index];
 
-        if (cell.isEndpoint || cell.colorId != 0)
+        // 1. Nhấn vào điểm gốc Endpoint
+        if (cell.isEndpoint)
         {
             activeColor = cell.colorId;
             isDragging = true;
+
+            if (!colorPaths.ContainsKey(activeColor))
+            {
+                colorPaths[activeColor] = new List<int>();
+            }
+
+            ResetColorPath(activeColor);
+            colorPaths[activeColor].Add(index);
+            return;
+        }
+
+        // 2. Nhấn vào một ô đã có dây nối trước đó
+        if (cell.colorId != 0)
+        {
+            activeColor = cell.colorId;
+            isDragging = true;
+
+            if (colorPaths.ContainsKey(activeColor))
+            {
+                TrimPathTo(activeColor, index);
+            }
         }
     }
 
@@ -115,17 +134,44 @@ public class ColorConnectPuzzle : MonoBehaviour
     {
         if (isSolved || !isDragging || activeColor == 0 || index < 0 || index >= cells.Count) return;
 
-        PuzzleCell cell = cells[index];
+        if (!colorPaths.ContainsKey(activeColor) || colorPaths[activeColor].Count == 0) return;
 
-        // Không tô đè lên điểm Endpoint của màu khác
-        if (cell.isEndpoint && cell.colorId != activeColor) return;
+        List<int> currentPath = colorPaths[activeColor];
+        int lastIndex = currentPath[currentPath.Count - 1];
 
-        if (!cell.isEndpoint)
+        if (index == lastIndex) return;
+
+        // Cơ chế tua lùi nếu lướt chuột ngược lại các ô trước đó trên cùng dây
+        int existingIndexInPath = currentPath.IndexOf(index);
+        if (existingIndexInPath != -1)
         {
-            cell.colorId = activeColor;
-            UpdateCellVisual(cell);
-            CheckWinCondition();
+            TrimPathTo(activeColor, index);
+            return;
         }
+
+        // Chặn hoàn toàn đi chéo (chỉ cho phép đi 4 hướng liền kề)
+        if (!IsAdjacent(lastIndex, index)) return;
+
+        // Nếu đường dây hiện tại đã chạm tới Endpoint đích thì dừng kéo tiếp
+        if (currentPath.Count > 1 && cells[lastIndex].isEndpoint) return;
+
+        PuzzleCell targetCell = cells[index];
+
+        // Không cho phép đi vào Endpoint của màu khác
+        if (targetCell.isEndpoint && targetCell.colorId != activeColor) return;
+
+        // Nếu đè lên dây của màu khác -> Reset toàn bộ dây của màu bị đè
+        if (targetCell.colorId != 0 && targetCell.colorId != activeColor && !targetCell.isEndpoint)
+        {
+            ResetColorPath(targetCell.colorId);
+        }
+
+        // Thêm ô vào đường dây và hiển thị màu
+        currentPath.Add(index);
+        targetCell.colorId = activeColor;
+        UpdateCellVisual(targetCell);
+
+        CheckWinCondition();
     }
 
     public void OnCellPointerUp(int index)
@@ -134,8 +180,60 @@ public class ColorConnectPuzzle : MonoBehaviour
         activeColor = 0;
     }
 
+    private bool IsAdjacent(int idxA, int idxB)
+    {
+        int rowA = idxA / GRID_SIZE;
+        int colA = idxA % GRID_SIZE;
+        int rowB = idxB / GRID_SIZE;
+        int colB = idxB % GRID_SIZE;
+
+        int rowDiff = Mathf.Abs(rowA - rowB);
+        int colDiff = Mathf.Abs(colA - colB);
+
+        return (rowDiff + colDiff) == 1;
+    }
+
+    private void TrimPathTo(int cId, int targetIndex)
+    {
+        if (!colorPaths.ContainsKey(cId)) return;
+
+        List<int> path = colorPaths[cId];
+        int targetPos = path.IndexOf(targetIndex);
+        if (targetPos == -1) return;
+
+        for (int i = path.Count - 1; i > targetPos; i--)
+        {
+            int cellIdx = path[i];
+            if (!cells[cellIdx].isEndpoint)
+            {
+                cells[cellIdx].colorId = 0;
+                UpdateCellVisual(cells[cellIdx]);
+            }
+            path.RemoveAt(i);
+        }
+    }
+
+    private void ResetColorPath(int cId)
+    {
+        if (!colorPaths.ContainsKey(cId)) return;
+
+        List<int> path = colorPaths[cId];
+        for (int i = path.Count - 1; i >= 0; i--)
+        {
+            int cellIdx = path[i];
+            if (!cells[cellIdx].isEndpoint)
+            {
+                cells[cellIdx].colorId = 0;
+                UpdateCellVisual(cells[cellIdx]);
+            }
+        }
+        path.Clear();
+    }
+
     private void InitBoardVisuals()
     {
+        colorPaths.Clear();
+
         foreach (var cell in cells)
         {
             if (cell.isEndpoint)
@@ -183,42 +281,49 @@ public class ColorConnectPuzzle : MonoBehaviour
     {
         if (cells.Count != GRID_SIZE * GRID_SIZE) return;
 
-        // Kiểm tra xem tất cả các ô đã được phủ kín màu chưa
+        // 1. Toàn bộ 49 ô phải được phủ kín, không còn ô trống
         for (int i = 0; i < cells.Count; i++)
         {
             if (cells[i].colorId == 0) return;
         }
 
-        // Lọc danh sách điểm gốc
-        Dictionary<int, List<int>> colorEndpoints = new Dictionary<int, List<int>>();
+        // 2. Gom nhóm các điểm gốc (Endpoints) theo từng cặp màu
+        Dictionary<int, List<int>> endpointsByColor = new Dictionary<int, List<int>>();
         for (int i = 0; i < cells.Count; i++)
         {
             if (cells[i].isEndpoint)
             {
                 int cId = cells[i].colorId;
-                if (!colorEndpoints.ContainsKey(cId))
+                if (!endpointsByColor.ContainsKey(cId))
                 {
-                    colorEndpoints[cId] = new List<int>();
+                    endpointsByColor[cId] = new List<int>();
                 }
-                colorEndpoints[cId].Add(i);
+                endpointsByColor[cId].Add(i);
             }
         }
 
-        // BFS duyệt đường nối thông suốt từng cặp màu
-        foreach (var pair in colorEndpoints)
+        // 3. Quét BFS đảm bảo 2 Endpoint của tất cả các màu đều được nối thông mạch
+        foreach (var pair in endpointsByColor)
         {
-            if (pair.Value.Count != 2) return;
+            int colorId = pair.Key;
+            List<int> endpoints = pair.Value;
 
-            if (!IsPathConnected(pair.Value[0], pair.Value[1], pair.Key))
+            if (endpoints.Count != 2) return;
+
+            int startPoint = endpoints[0];
+            int endPoint = endpoints[1];
+
+            if (!IsPathConnectedBFS(startPoint, endPoint, colorId))
             {
-                return;
+                return; // Có màu chưa nối thông đến đích
             }
         }
 
+        // Đã thỏa mãn tất cả điều kiện -> Kích hoạt thắng
         OnPuzzleSolved();
     }
 
-    private bool IsPathConnected(int start, int target, int colorId)
+    private bool IsPathConnectedBFS(int start, int target, int colorId)
     {
         Queue<int> queue = new Queue<int>();
         HashSet<int> visited = new HashSet<int>();
@@ -226,16 +331,16 @@ public class ColorConnectPuzzle : MonoBehaviour
         queue.Enqueue(start);
         visited.Add(start);
 
+        int[] dRow = { -1, 1, 0, 0 };
+        int[] dCol = { 0, 0, -1, 1 };
+
         while (queue.Count > 0)
         {
-            int current = queue.Dequeue();
-            if (current == target) return true;
+            int curr = queue.Dequeue();
+            if (curr == target) return true;
 
-            int row = current / GRID_SIZE;
-            int col = current % GRID_SIZE;
-
-            int[] dRow = { -1, 1, 0, 0 };
-            int[] dCol = { 0, 0, -1, 1 };
+            int row = curr / GRID_SIZE;
+            int col = curr % GRID_SIZE;
 
             for (int i = 0; i < 4; i++)
             {
@@ -244,12 +349,12 @@ public class ColorConnectPuzzle : MonoBehaviour
 
                 if (nRow >= 0 && nRow < GRID_SIZE && nCol >= 0 && nCol < GRID_SIZE)
                 {
-                    int neighborIndex = nRow * GRID_SIZE + nCol;
+                    int neighbor = nRow * GRID_SIZE + nCol;
 
-                    if (!visited.Contains(neighborIndex) && cells[neighborIndex].colorId == colorId)
+                    if (!visited.Contains(neighbor) && cells[neighbor].colorId == colorId)
                     {
-                        visited.Add(neighborIndex);
-                        queue.Enqueue(neighborIndex);
+                        visited.Add(neighbor);
+                        queue.Enqueue(neighbor);
                     }
                 }
             }
@@ -261,11 +366,19 @@ public class ColorConnectPuzzle : MonoBehaviour
     private void OnPuzzleSolved()
     {
         isSolved = true;
+        Debug.Log("<color=cyan>======> [CHÚC MỪNG] ĐÃ GIẢI THÀNH CÔNG! ĐANG KÍCH HOẠT BẬT ĐÈN... <======</color>");
 
+        // Bật sáng bóng đèn ngoài map
         if (targetLight != null)
         {
+            targetLight.gameObject.SetActive(true);
+            targetLight.enabled = true;
             targetLight.color = lightTurnOnColor;
             targetLight.intensity = lightIntensityOn;
+        }
+        else
+        {
+            Debug.LogError("[Puzzle] Chưa kéo Target Light vào Inspector của PuzzleController!");
         }
 
         StartCoroutine(AutoCloseRoutine());
@@ -278,6 +391,7 @@ public class ColorConnectPuzzle : MonoBehaviour
     }
 }
 
+// Lắng nghe sự kiện chuột mượt mà tương thích 100% với New Input System
 public class CellEventBridge : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
     private int cellIndex;
