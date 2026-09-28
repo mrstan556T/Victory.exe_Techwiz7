@@ -19,17 +19,16 @@ public class CameraController : MonoBehaviour
     private float rotationX;
     private float rotationY;
 
-    private void Start()
-    {
-        // Khóa chuột vào giữa màn hình
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+    private bool isGameplayMode = true;
 
-        // Lấy rotation ban đầu của camera
+    private void Awake()
+    {
         Vector3 currentRotation = transform.eulerAngles;
 
         rotationX = currentRotation.x;
         rotationY = currentRotation.y;
+
+        EnableGameplayInput();
     }
 
     private void LateUpdate()
@@ -37,9 +36,14 @@ public class CameraController : MonoBehaviour
         if (target == null)
             return;
 
-        HandleMouseRotation();
+        if (isGameplayMode)
+        {
+            HandleMouseRotation();
+        }
+
         FollowTarget();
     }
+
     private void HandleMouseRotation()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -50,6 +54,7 @@ public class CameraController : MonoBehaviour
 
         // Xoay dọc nhưng bị giới hạn
         rotationX -= mouseY;
+
         rotationX = Mathf.Clamp(
             rotationX,
             minVerticalAngle,
@@ -59,13 +64,34 @@ public class CameraController : MonoBehaviour
 
     private void FollowTarget()
     {
-        Quaternion rotation = Quaternion.Euler(rotationX, rotationY, 0f);
+        Quaternion rotation =
+            Quaternion.Euler(rotationX, rotationY, 0f);
 
-        Vector3 offset = rotation * new Vector3(0f, 0f, -distance);
+        Vector3 offset =
+            rotation * new Vector3(0f, 0f, -distance);
 
-        Vector3 targetPosition = target.position + Vector3.up * height;
+        Vector3 targetPosition =
+            target.position + Vector3.up * height;
 
-        transform.position = targetPosition + offset;
+        transform.position =
+            targetPosition + offset;
+
         transform.rotation = rotation;
+    }
+
+    public void EnableGameplayInput()
+    {
+        isGameplayMode = true;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    public void EnableUIInput()
+    {
+        isGameplayMode = false;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
