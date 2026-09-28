@@ -1,219 +1,240 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PatrolResponse : MonoBehaviour
 {
+    public enum ResponseState
+    {
+        Idle,
+        Warning,
+        Dialogue,
+        Completed
+    }
+
+    [Header("References")]
     [SerializeField] private RestrictedArea restrictedArea;
     [SerializeField] private PatrolDetection patrolDetection;
-    [SerializeField] private PatrolWarningZone warningZone;
     [SerializeField] private Transform blockingPoint;
-    [SerializeField] private Animator animator;
+
+    [Header("Warning")]
+    [SerializeField] private float warningDuration = 2f;
+
+    [Header("Dialogue")]
+    [SerializeField] private UnityEvent onDialogueRequested;
 
     private PatrolMovement patrolMovement;
     private Transform responseTarget;
+    private ResponseState currentState = ResponseState.Idle;
+    private float warningTimer;
 
-    public bool IsBlocking { get; private set; }
-    public bool IsWarning { get; private set; }
-    public bool IsSecurityViolation { get; private set; }
+    public bool IsSecurityViolation =>
+        currentState != ResponseState.Idle;
+
+    public bool IsResponseActive =>
+        currentState != ResponseState.Idle &&
+        currentState != ResponseState.Completed;
+
+    public bool IsWarning =>
+        currentState == ResponseState.Warning;
+
+    public bool IsDialogue =>
+        currentState == ResponseState.Dialogue;
+
+    public ResponseState CurrentState =>
+        currentState;
+
+    public Transform ResponseTarget =>
+        responseTarget;
 
     private void Awake()
     {
         patrolMovement = GetComponent<PatrolMovement>();
+
+        if (restrictedArea == null)
+        {
+            FindRestrictedArea();
+        }
+
+        if (patrolDetection == null)
+        {
+            patrolDetection = GetComponent<PatrolDetection>();
+        }
     }
 
     private void Update()
     {
-        if (restrictedArea == null ||
-            patrolDetection == null ||
-            warningZone == null ||
-            patrolMovement == null)
+        if (restrictedArea == null)
         {
+            Debug.LogWarning("PatrolResponse: RestrictedArea is missing.");
             return;
         }
 
-        //start security violation
-        if (!IsSecurityViolation &&
-            restrictedArea.IsPlayerInside &&
-            patrolDetection.CurrentState == PatrolDetection.DetectionState.Detected)
+        if (patrolDetection == null)
         {
-            StartSecurityViolation();
-        }
-
-        if (!IsSecurityViolation)
-        {
+            Debug.LogWarning("PatrolResponse: PatrolDetection is missing.");
             return;
         }
 
-        //stop warning when player leaves warning zone
-        if (IsWarning)
+        if (patrolMovement == null)
         {
-            warningZone.CheckPlayer(responseTarget);
-
-            if (!warningZone.IsPlayerInside)
-            {
-                StopWarning();
-            }
-
+            Debug.LogWarning("PatrolResponse: PatrolMovement is missing.");
             return;
         }
 
-        //stop blocking when player leaves restricted area
-        if (!restrictedArea.IsPlayerInside)
-        {
-            StopSecurityViolation();
-            return;
-        }
-
-        //start warning
-        if (IsBlocking && patrolMovement.IsAtOverrideTarget)
-        {
-            StartWarning();
-            return;
-        }
-
-        //face player while blocking
-        if (patrolDetection.IsPlayerCurrentlyVisible)
-        {
-            responseTarget = patrolDetection.DetectedPlayer;
-            FacePlayer(responseTarget);
-        }
-        else
-        {
-            FaceLastKnownPosition();
-        }
-    }
-
-    private void StartSecurityViolation()
-    {
         if (blockingPoint == null)
         {
+            Debug.LogWarning("PatrolResponse: BlockingPoint is missing.");
             return;
         }
 
-        responseTarget = patrolDetection.DetectedPlayer;
+        if (currentState != ResponseState.Idle)
+        {
+            return;
+        }
+
+        if (!restrictedArea.IsPlayerInside)
+        {
+            return;
+        }
+
+        if (patrolDetection.CurrentState !=
+            PatrolDetection.DetectionState.Detected)
+        {
+            return;
+        }
+
+        StartSecurityResponse();
+    }
+
+    private void CheckForSecurityViolation()
+    {
+        if (!restrictedArea.IsPlayerInside)
+        {
+            return;
+        }
+
+        if (patrolDetection.CurrentState !=
+            PatrolDetection.DetectionState.Detected)
+        {
+            return;
+        }
+
+        StartSecurityResponse();
+    }
+
+    private void FindRestrictedArea()
+    {
+        RestrictedArea[] areas =
+            FindObjectsByType<RestrictedArea>(
+                FindObjectsSortMode.None
+            );
+
+        if (areas.Length > 0)
+        {
+            restrictedArea = areas[0];
+        }
+    }
+
+    private void StartSecurityResponse()
+    {
+        responseTarget =
+            patrolDetection.DetectedPlayer;
 
         if (responseTarget == null)
         {
             return;
         }
 
-        IsSecurityViolation = true;
-        IsBlocking = true;
+        currentState = ResponseState.Warning;
+        warningTimer = warningDuration;
 
-        //move to blocking point
-        patrolMovement.MoveToOverrideTarget(blockingPoint);
+        // stop patrol movement during security response
+        patrolMovement.StopPatrol();
 
-        Debug.Log("Security violation started.");
-        Debug.Log("Patrol is moving to blocking point.");
+        Debug.Log("Security response started.");
+        Debug.Log("Patrol warning started.");
     }
 
-    private void StartWarning()
+    private void UpdateWarning()
+    {
+        warningTimer -= Time.deltaTime;
+
+        if (warningTimer > 0f)
+        {
+            return;
+        }
+
+        StartDialogue();
+    }
+
+    private void StartDialogue()
+    {
+        currentState = ResponseState.Dialogue;
+
+        Debug.Log("Patrol dialogue requested.");
+
+        if (onDialogueRequested != null)
+        {
+            onDialogueRequested.Invoke();
+        }
+    }
+
+    public void OnDialogueCompleted()
+    {
+        if (currentState != ResponseState.Dialogue)
+        {
+            return;
+        }
+
+        Debug.Log("Patrol dialogue completed.");
+
+        TeleportPlayerToBlockingPoint();
+    }
+
+    private void TeleportPlayerToBlockingPoint()
     {
         if (responseTarget == null)
         {
+            EndResponse();
             return;
         }
 
-        IsBlocking = false;
-        IsWarning = true;
-
-        //activate warning zone
-        warningZone.StartWarning(responseTarget);
-
-        //face player
-        FacePlayer(responseTarget);
-
-        //play warning animation
-        if (animator != null)
+        if (blockingPoint == null)
         {
-            animator.Play("Warning");
-        }
+            Debug.LogError(
+                "PatrolResponse: BlockingPoint is missing."
+            );
 
-        Debug.Log("Patrol is warning the player.");
-        Debug.Log("Player inside warning zone: " + warningZone.IsPlayerInside);
-    }
-
-    private void StopWarning()
-    {
-        IsWarning = false;
-
-        warningZone.StopWarning();
-
-        //resume patrol
-        patrolMovement.ResumePatrol();
-
-        if (animator != null)
-        {
-            animator.Play("Walking");
-        }
-
-        IsSecurityViolation = false;
-        responseTarget = null;
-
-        Debug.Log("Player left warning zone.");
-        Debug.Log("Patrol resumed patrol.");
-    }
-
-    private void StopSecurityViolation()
-    {
-        IsBlocking = false;
-        IsWarning = false;
-        IsSecurityViolation = false;
-
-        warningZone.StopWarning();
-        responseTarget = null;
-
-        //resume patrol
-        patrolMovement.ResumePatrol();
-
-        if (animator != null)
-        {
-            animator.Play("Walking");
-        }
-
-        Debug.Log("Security violation ended.");
-        Debug.Log("Patrol resumed patrol.");
-    }
-
-    private void FacePlayer(Transform player)
-    {
-        if (player == null)
-        {
+            EndResponse();
             return;
         }
 
-        Vector3 direction = player.position - transform.position;
-        direction.y = 0f;
+        currentState = ResponseState.Completed;
 
-        if (direction.sqrMagnitude <= 0.001f)
-        {
-            return;
-        }
+        // teleport player after dialogue
+        responseTarget.position =
+            blockingPoint.position;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            5f * Time.deltaTime
+        Debug.Log(
+            "Player teleported to BlockingPoint."
         );
+
+        EndResponse();
     }
 
-    private void FaceLastKnownPosition()
+    private void EndResponse()
     {
-        Vector3 direction = patrolDetection.LastKnownPlayerPosition - transform.position;
-        direction.y = 0f;
+        currentState = ResponseState.Idle;
+        responseTarget = null;
 
-        if (direction.sqrMagnitude <= 0.001f)
-        {
-            return;
-        }
+        patrolMovement.ResumePatrol();
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        Debug.Log(
+            "Security response completed."
+        );
 
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            5f * Time.deltaTime
+        Debug.Log(
+            "Patrol resumed patrol."
         );
     }
 }

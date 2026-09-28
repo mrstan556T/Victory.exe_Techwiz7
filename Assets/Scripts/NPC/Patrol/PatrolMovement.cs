@@ -19,6 +19,7 @@ public class PatrolMovement : MonoBehaviour
     private bool isReturningToPatrol;
     private Transform overrideTarget;
     private Transform followTarget;
+    private Vector3 overrideTargetPosition;
     private bool isAtOverrideTarget;
 
     public bool IsMovingToOverrideTarget => overrideTarget != null && !isAtOverrideTarget;
@@ -30,7 +31,6 @@ public class PatrolMovement : MonoBehaviour
         {
             agent = GetComponent<NavMeshAgent>();
         }
-
     }
 
     private void Update()
@@ -93,7 +93,7 @@ public class PatrolMovement : MonoBehaviour
 
         agent.isStopped = false;
         agent.speed = moveSpeed;
-        agent.SetDestination(overrideTarget.position);
+        agent.SetDestination(overrideTargetPosition);
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
@@ -104,6 +104,8 @@ public class PatrolMovement : MonoBehaviour
             {
                 animator.Play("Idle");
             }
+
+            Debug.Log("PatrolMovement reached override target.");
         }
     }
 
@@ -200,6 +202,7 @@ public class PatrolMovement : MonoBehaviour
         previousWaypointIndex = currentWaypointIndex;
         followTarget = null;
         overrideTarget = target;
+        overrideTargetPosition = target.position;
         isStopping = false;
         isReturningToPatrol = false;
         isAtOverrideTarget = false;
@@ -211,6 +214,9 @@ public class PatrolMovement : MonoBehaviour
         {
             animator.Play("Walking");
         }
+
+        Debug.Log("PatrolMovement target: " + target.name);
+        Debug.Log("PatrolMovement target position: " + overrideTargetPosition);
     }
 
     public void FollowPlayer(Transform target)
@@ -245,5 +251,25 @@ public class PatrolMovement : MonoBehaviour
         {
             animator.Play("Walking");
         }
+
+        Debug.Log("PatrolMovement resumed patrol.");
+    }
+
+    public void StopPatrol()
+    {
+        followTarget = null;
+        overrideTarget = null;
+        isStopping = false;
+        isReturningToPatrol = false;
+        isAtOverrideTarget = false;
+
+        agent.isStopped = true;
+
+        if (animator != null)
+        {
+            animator.Play("Idle");
+        }
+
+        Debug.Log("PatrolMovement stopped.");
     }
 }
