@@ -4,17 +4,16 @@ using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
 {
-    private static SaveManager instance;
-    private bool shouldLoadPosition = false;
+    public static SaveManager Instance { get; private set; }
 
-    // Biến cờ toàn cục để các script khác (như Intro) biết người chơi đang Continue hay New Game
     public static bool IsLoadingSavedGame = false;
+    private bool shouldLoadPosition = false;
 
     void Awake()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
@@ -29,7 +28,7 @@ public class SaveManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // --- HÀM LƯU TIẾN TRÌNH ---
+    // 1. LƯU TIẾN TRÌNH
     public static void SavePlayerGame()
     {
         GameObject player = GameObject.FindWithTag("Player");
@@ -42,71 +41,65 @@ public class SaveManager : MonoBehaviour
             PlayerPrefs.SetString("SavedScene", SceneManager.GetActiveScene().name);
             PlayerPrefs.Save();
 
-            Debug.Log($"[SaveManager] Đã lưu game thành công tại vị trí: {pos}");
+            Debug.Log($"<color=green>[SaveManager]</color> Đã lưu vị trí: {pos} tại Scene: {SceneManager.GetActiveScene().name}");
         }
         else
         {
-            Debug.LogWarning("[SaveManager] Không tìm thấy GameObject có Tag là 'Player' để lưu!");
+            Debug.LogError("[SaveManager] Không tìm thấy đối tượng có Tag 'Player'!");
         }
     }
 
-    // --- HÀM TIẾP TỤC GAME (CONTINUE) ---
-    public static void RequestContinueGame()
-    {
-        if (PlayerPrefs.HasKey("SavedScene") && PlayerPrefs.HasKey("PlayerX"))
-        {
-            IsLoadingSavedGame = true; // Bật cờ để chặn màn hình Intro
-            string savedScene = PlayerPrefs.GetString("SavedScene");
-            if (instance != null) instance.shouldLoadPosition = true;
-            SceneManager.LoadScene(savedScene);
-        }
-        else
-        {
-            // Nếu chưa có file lưu, chạy màn chơi mới bình thường
-            IsLoadingSavedGame = false;
-            SceneManager.LoadScene("URP_Rooftop_Market");
-        }
-    }
-
+    // 2. KÍCH HOẠT DỊCH VỊ TRÍ TỪ MAIN MENU
     public static void TriggerPositionLoadOnNextScene()
     {
-        if (instance != null)
+        if (Instance != null)
         {
-            instance.shouldLoadPosition = true;
-        }
-    }
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (shouldLoadPosition)
-        {
-            shouldLoadPosition = false;
-            StartCoroutine(DelayedLoadPosition());
+            Instance.shouldLoadPosition = true;
         }
     }
 
-    private IEnumerator DelayedLoadPosition()
+    // 3. XỬ LÝ KHI SCENE VỪA LOAD XONG
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Chờ 1 frame đảm bảo các object trong Scene khởi tạo xong
+        if (shouldLoadPosition || IsLoadingSavedGame)
+        {
+            shouldLoadPosition = false;
+            StartCoroutine(ApplySavedPositionRoutine());
+        }
+    }
+
+    private IEnumerator ApplySavedPositionRoutine()
+    {
+        // Chờ 2 frames để đảm bảo map và player đã khởi tạo hoàn toàn
         yield return null;
+        yield return new WaitForEndOfFrame();
 
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null && PlayerPrefs.HasKey("PlayerX"))
         {
-            CharacterController controller = player.GetComponent<CharacterController>();
-            if (controller != null) controller.enabled = false; // Tắt tạm để dịch chuyển mượt mà
-
             float x = PlayerPrefs.GetFloat("PlayerX");
             float y = PlayerPrefs.GetFloat("PlayerY");
             float z = PlayerPrefs.GetFloat("PlayerZ");
+            Vector3 targetPos = new Vector3(x, y, z);
 
-            player.transform.position = new Vector3(x, y, z);
+            // Tắt tạm thời các component vật lý để đặt tọa độ không bị cản
+            CharacterController cc = player.GetComponent<CharacterController>();
+            Rigidbody rb = player.GetComponent<Rigidbody>();
 
-            if (controller != null) controller.enabled = true; // Bật lại controller
+            if (cc != null) cc.enabled = false;
+            if (rb != null) rb.isKinematic = true;
 
-            Debug.Log($"[SaveManager] Đã nạp thành công vị trí cũ của nhân vật: {player.transform.position}");
+            player.transform.position = targetPos;
+
+            yield return null; // Chờ 1 frame cập nhật vị trí mới
+
+            if (cc != null) cc.enabled = true;
+            if (rb != null) rb.isKinematic = false;
+
+            Debug.Log($"<color=cyan>[SaveManager]</color> Đã dịch chuyển Player đến vị trí lưu: {targetPos}");
         }
 
-        // Chờ thêm 1 khoảng ngắn sau khi định vị rồi trả cờ về false
+        // Tắt cờ trạng thái sau khi đã định vị xong
         yield return new WaitForSeconds(0.2f);
         IsLoadingSavedGame = false;
     }
