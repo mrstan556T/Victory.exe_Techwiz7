@@ -16,6 +16,8 @@ public class DialogueManager : MonoBehaviour
     private Action onDialogueComplete;
 
     public bool IsDialogueActive => isDialogueActive;
+    
+    private bool isPatrolDialogue;
 
     private void Awake()
     {
@@ -34,6 +36,9 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(ConversationData conversation)
     {
+        //patrol dialogue 
+        isPatrolDialogue = false;
+        
         if (conversation == null)
             return;
 
@@ -55,6 +60,35 @@ public class DialogueManager : MonoBehaviour
     }
 
     // =========================================================
+    // PATROL DIALOGUE
+    // =========================================================
+    public void StartPatrolDialogue(
+    ConversationData conversation,
+    Action onComplete)
+{
+    if (conversation == null)
+        return;
+
+    if (conversation.lines == null ||
+        conversation.lines.Length == 0)
+        return;
+
+    currentConversation = conversation;
+
+    currentLineIndex = 0;
+
+    isDialogueActive = true;
+
+    isPatrolDialogue = true;
+
+    onDialogueComplete = onComplete;
+
+    dialogueUI.ShowDialogue(
+        conversation.lines[currentLineIndex]
+    );
+}
+
+    // =========================================================
     // STORY EVENT DIALOGUE
     // =========================================================
 
@@ -63,6 +97,9 @@ public class DialogueManager : MonoBehaviour
         string text,
         Action onComplete)
     {
+        //patrol dialogue 
+        isPatrolDialogue = false;
+
         if (string.IsNullOrEmpty(text))
         {
             onComplete?.Invoke();
@@ -132,7 +169,7 @@ public class DialogueManager : MonoBehaviour
         onDialogueComplete = null;
 
         // NPC dialogue
-        if (currentConversation != null)
+        if (currentConversation != null && !isPatrolDialogue)
         {
             if (StoryManager.Instance != null)
             {
@@ -150,8 +187,11 @@ public class DialogueManager : MonoBehaviour
 
         dialogueUI.HideDialogue();
 
+        isPatrolDialogue = false;
+
         // Story dialogue callback
         callback?.Invoke();
+        
     }
 
     private void CompleteConversation()
