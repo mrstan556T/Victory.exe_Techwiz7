@@ -1097,6 +1097,10 @@ PrefabInstance:
       propertyPath: cameraTransform
       value: 
       objectReference: {fileID: 1177179901}
+    - target: {fileID: 1417813328476935248, guid: f61ce505bfeb53b47b6446d7b7a6fc9f, type: 3}
+      propertyPath: groundLayer.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2480182671590981436, guid: f61ce505bfeb53b47b6446d7b7a6fc9f, type: 3}
       propertyPath: m_Name
       value: player

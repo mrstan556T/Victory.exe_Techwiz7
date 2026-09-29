@@ -157,42 +157,38 @@ public class DialogueManager : MonoBehaviour
     // END
     // =========================================================
 
-    public void EndDialogue()
+   public void EndDialogue()
+{
+    if (!isDialogueActive)
+        return;
+
+    isDialogueActive = false;
+
+    Action callback = onDialogueComplete;
+    onDialogueComplete = null;
+
+    if (currentConversation != null && !isPatrolDialogue)
     {
-        if (!isDialogueActive)
-            return;
-
-        isDialogueActive = false;
-
-        Action callback = onDialogueComplete;
-
-        onDialogueComplete = null;
-
-        // NPC dialogue
-        if (currentConversation != null && !isPatrolDialogue)
+        if (StoryManager.Instance != null)
         {
-            if (StoryManager.Instance != null)
-            {
-                StoryManager.Instance.CompleteConversation(
-                    currentConversation.id
-                );
-            }
+            StoryManager.Instance.CompleteConversation(
+                currentConversation.id
+            );
         }
 
-        currentConversation = null;
-
-        currentLineIndex = 0;
-
+        // Phải gọi trước khi currentConversation = null
         CompleteConversation();
-
-        dialogueUI.HideDialogue();
-
-        isPatrolDialogue = false;
-
-        // Story dialogue callback
-        callback?.Invoke();
-        
     }
+
+    currentConversation = null;
+    currentLineIndex = 0;
+
+    dialogueUI.HideDialogue();
+
+    isPatrolDialogue = false;
+
+    callback?.Invoke();
+}
 
     private void CompleteConversation()
     {

@@ -353,51 +353,65 @@ public class StoryManager : MonoBehaviour
     // NPC CONVERSATION
     // =========================================================
 
-    public ConversationData GetAvailableConversation(
-        string npcId)
+    public ConversationData GetAvailableConversation(string npcId)
     {
         if (storyData == null ||
             storyData.conversations == null)
         {
+            Debug.LogWarning("StoryData or conversations is null.");
             return null;
         }
 
-        foreach (
-            ConversationData conversation
-            in storyData.conversations)
+        Debug.Log(
+            $"Looking for conversation. NPC = {npcId}, " +
+            $"CurrentEvent = {currentEvent?.id}, " +
+            $"CurrentObjective = {currentEvent?.objectiveId}"
+        );
+
+        foreach (ConversationData conversation in storyData.conversations)
         {
+            Debug.Log(
+                $"Checking conversation: {conversation.id}, " +
+                $"NPC = {conversation.npcId}"
+            );
+
             if (conversation.npcId != npcId)
                 continue;
 
-            if (completedConversations.Contains(
-                conversation.id))
+            if (completedConversations.Contains(conversation.id))
+                continue;
+
+            if (!CheckCondition(conversation.condition))
             {
+                Debug.Log(
+                    $"Conversation condition failed: {conversation.id}"
+                );
+
                 continue;
             }
 
-            if (!CheckCondition(
-                conversation.condition))
-            {
-                continue;
-            }
+            Debug.Log(
+                $"Conversation FOUND: {conversation.id}"
+            );
 
             return conversation;
         }
+
+        Debug.LogWarning(
+            $"No available conversation found for NPC: {npcId}"
+        );
 
         return null;
     }
 
 
-    private bool CheckCondition(
-        DialogueCondition condition)
+    private bool CheckCondition(DialogueCondition condition)
     {
         if (condition == null)
             return true;
 
-
         // Required conversation
-        if (!string.IsNullOrEmpty(
-            condition.requiredConversationId))
+        if (!string.IsNullOrEmpty(condition.requiredConversationId))
         {
             if (!completedConversations.Contains(
                 condition.requiredConversationId))
@@ -406,18 +420,16 @@ public class StoryManager : MonoBehaviour
             }
         }
 
-
-        // Required objective
-        if (!string.IsNullOrEmpty(
-            condition.requiredObjectiveId))
+        // Required objective = objective currently active
+        if (!string.IsNullOrEmpty(condition.requiredObjectiveId))
         {
-            if (!completedObjectives.Contains(
-                condition.requiredObjectiveId))
+            if (currentEvent == null ||
+                currentEvent.type != "objective" ||
+                currentEvent.objectiveId != condition.requiredObjectiveId)
             {
                 return false;
             }
         }
-
 
         return true;
     }

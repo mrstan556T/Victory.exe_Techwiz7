@@ -161,10 +161,26 @@ public class NPCInteraction : MonoBehaviour
 
     private void ShowPrompt()
     {
-        if (interactionPrompt != null)
+        Debug.Log("========== SHOW PROMPT ==========");
+
+        if (interactionPrompt == null)
         {
-            interactionPrompt.SetActive(true);
+            Debug.LogError("interactionPrompt IS NULL!");
+            return;
         }
+
+        Debug.Log(
+            $"Prompt Name: {interactionPrompt.name} | " +
+            $"ActiveSelf: {interactionPrompt.activeSelf} | " +
+            $"ActiveInHierarchy: {interactionPrompt.activeInHierarchy}"
+        );
+
+        interactionPrompt.SetActive(true);
+
+        Debug.Log(
+            $"After SetActive: {interactionPrompt.activeSelf} | " +
+            $"InHierarchy: {interactionPrompt.activeInHierarchy}"
+        );
     }
 
     private void HidePrompt()
